@@ -1,0 +1,2 @@
+# sample-solar-panel-configurator
+
