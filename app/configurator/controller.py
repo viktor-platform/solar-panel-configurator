@@ -16,20 +16,24 @@ SOFTWARE.
 """
 from viktor.core import ViktorController
 from viktor.views import DataResult, DataView, DataItem, DataGroup
-from viktor.views import MapPoint, MapResult, MapView, MapPolyline, MapPolygon
+from viktor.views import MapPoint, MapResult, MapView
 
-from .parametrization import ConfiguratorParametrization
 from munch import Munch
-from .PVCalculations import calculate_energy_generation
+from .parametrization import ConfiguratorParametrization
+from .pv_calculations import calculate_energy_generation
 
 
 class Controller(ViktorController):
+    """Controller class which acts as interface for the Configurator entity type.
+    Connects the Parametrization (left-side of web UI), with the Views (right-side of web UI."""
+
     label = "Configurator"
     parametrization = ConfiguratorParametrization(width=30)
     viktor_convert_entity_field = True
 
     @MapView("Map", duration_guess=1)  # only visible on "Step 1"
     def get_map_view(self, params: Munch, **kwargs):
+        """Creates mapview for step 1"""
         features = []
 
         if params.step_1.location.point:
@@ -40,6 +44,7 @@ class Controller(ViktorController):
 
     @DataView("Data", duration_guess=1)  # only visible on "Step 2"
     def get_data_view(self, params, **kwargs):
+        """Creates dataview for step 2 from the pv_calculation"""
         e_yield = calculate_energy_generation(
             params.step_1.location.point.lat, params.step_1.location.point.lon
         )

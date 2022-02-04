@@ -1,20 +1,31 @@
+"""Copyright (c) 2022 VIKTOR B.V.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.
+
+VIKTOR B.V. PROVIDES THIS SOFTWARE ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
 import pandas as pd
-import matplotlib.pyplot as plt
 import pvlib
-from timezonefinder import TimezoneFinder
 
 
-def calculate_energy_generation(Lat, Lon):
-    latitude = Lat
-    longitude = Lon
+def calculate_energy_generation(lat, lon):
+    """Calculates the yearly energy yield as a result of the coorinates"""
+    latitude = lat
+    longitude = lon
     name = "Your"
 
     # determine the altitude based on coordinates
     altitude = 0
-
-    # determine the timezone based on coordinates
-    tf = TimezoneFinder()
-    timezone = tf.timezone_at(lng=longitude, lat=latitude)
 
     # get the module and inverter specifications from SAM
     sandia_modules = pvlib.pvsystem.retrieve_sam("SandiaMod")
@@ -78,9 +89,9 @@ def calculate_energy_generation(Lat, Lon):
     effective_irradiance = pvlib.pvsystem.sapm_effective_irradiance(
         total_irrad["poa_direct"], total_irrad["poa_diffuse"], am_abs, aoi, module
     )
-    dc = pvlib.pvsystem.sapm(effective_irradiance, tcell, module)
-    ac = pvlib.inverter.sandia(dc["v_mp"], dc["p_mp"], inverter)
-    acdp = ac.to_frame()
+    dc_yield = pvlib.pvsystem.sapm(effective_irradiance, tcell, module)
+    ac_yield = pvlib.inverter.sandia(dc_yield["v_mp"], dc_yield["p_mp"], inverter)
+    acdp = ac_yield.to_frame()
 
     acdp["utc_time"] = pd.to_datetime(acdp.index)
     acdp["utc_time"] = acdp.index.strftime("%m-%d %H:%M:%S")

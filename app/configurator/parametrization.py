@@ -19,15 +19,15 @@ from viktor.parametrization import (
     Parametrization,
     Step,
     NumberField,
-    BooleanField,
     GeoPointField,
     Tab,
-    Section,
 )
 from viktor.parametrization import OptionField
 
 
 class ConfiguratorParametrization(Parametrization):
+    """Defines the input fields for the mapview (step 1) and dataview (step 2)"""
+
     step_1 = Step("Step 1 Home", views="get_map_view")  # no views
     step_1.location = Tab("Location")
     step_1.location.point = GeoPointField("enter a point")
