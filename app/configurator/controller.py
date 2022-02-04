@@ -28,7 +28,7 @@ class Controller(ViktorController):
     parametrization = ConfiguratorParametrization(width=30)
     viktor_convert_entity_field = True
 
-    @MapView('Map', duration_guess=1)  # only visible on "Step 1"
+    @MapView("Map", duration_guess=1)  # only visible on "Step 1"
     def get_map_view(self, params: Munch, **kwargs):
         features = []
 
@@ -38,27 +38,14 @@ class Controller(ViktorController):
 
         return MapResult(features)
 
-    @DataView('Data', duration_guess=1) # only visible on "Step 2"
+    @DataView("Data", duration_guess=1)  # only visible on "Step 2"
     def get_data_view(self, params, **kwargs):
-        e_yield = calculate_energy_generation(params.step_1.location.point.lat,params.step_1.location.point.lon)
+        e_yield = calculate_energy_generation(
+            params.step_1.location.point.lat, params.step_1.location.point.lon
+        )
 
         data = DataGroup(
-            DataItem(label='Yearly energy yield', value=e_yield, suffix='Kwh/year')
+            DataItem(label="Yearly energy yield", value=e_yield, suffix="Kwh/year")
         )
 
         return DataResult(data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

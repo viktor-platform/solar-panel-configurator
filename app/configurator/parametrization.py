@@ -15,18 +15,27 @@ SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from viktor.parametrization import Parametrization, Step, NumberField, BooleanField, GeoPointField, Tab, Section
+from viktor.parametrization import (
+    Parametrization,
+    Step,
+    NumberField,
+    BooleanField,
+    GeoPointField,
+    Tab,
+    Section,
+)
 from viktor.parametrization import OptionField
 
 
 class ConfiguratorParametrization(Parametrization):
-    step_1 = Step('Step 1 Home', views='get_map_view')  # no views
+    step_1 = Step("Step 1 Home", views="get_map_view")  # no views
     step_1.location = Tab("Location")
     step_1.location.point = GeoPointField("enter a point")
 
-    step_1.location.surface = NumberField('Surface area', suffix='m2', default=0)
+    step_1.location.surface = NumberField("Surface area", suffix="m2", default=0)
 
-
-    step_2 = Step('Step 2 Panels', views='get_data_view')
-    step_2.panels = Tab('Panels')
-    step_2.panels.type = OptionField('Panel type', options=['type1', 'type2'], default='type1')
+    step_2 = Step("Step 2 Panels", views="get_data_view")
+    step_2.panels = Tab("Panels")
+    step_2.panels.type = OptionField(
+        "Panel type", options=["type1", "type2"], default="type1"
+    )
