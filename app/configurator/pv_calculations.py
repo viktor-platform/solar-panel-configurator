@@ -39,14 +39,16 @@ def calculate_energy_generation(lat, lon):
 
     # retreive weather data and elevation (altitude)
 
-    weather, months_selected, inputs, meta = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)
+    weather, *inputs = pvlib.iotools.get_pvgis_tmy(
+        latitude, longitude, map_variables=True
+    )
     weather.index.name = "utc_time"
 
     temp_air = weather["temp_air"]
     wind_speed = weather["wind_speed"]
     pressure = weather["pressure"]
 
-    altitude = inputs['location']['elevation']
+    altitude = inputs[1]["location"]["elevation"]
 
     # declare system
     system = {"module": module, "inverter": inverter, "surface_azimuth": 180}
