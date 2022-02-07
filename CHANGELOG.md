@@ -1,9 +1,19 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [Unreleased] - 2022-02-07
 ### Added
-None.
+- Manifest
+- Controller
+  - MapView
+  - Dataview
+- pv_calculations
+- Parametrization
+  - Step 1
+    - GeopointField
+    - NumberField
+  - Step 2
+    - OptionField
 
 ### Changed
 None.
@@ -16,7 +26,3 @@ None.
 
 ### Fixed
 None.
-
-## v1.0.0 (yyyy/mm/dd)
-### Added
-- Added first release of sample app

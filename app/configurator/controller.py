@@ -15,8 +15,14 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 SOFTWARE.
 """
 from viktor.core import ViktorController
-from viktor.views import DataResult, DataView, DataItem, DataGroup
-from viktor.views import MapPoint, MapResult, MapView
+from viktor.core import UserException
+from viktor.views import DataResult
+from viktor.views import DataView
+from viktor.views import DataItem
+from viktor.views import DataGroup
+from viktor.views import MapPoint
+from viktor.views import MapResult
+from viktor.views import MapView
 
 from munch import Munch
 from .parametrization import ConfiguratorParametrization
@@ -39,18 +45,22 @@ class Controller(ViktorController):
         if params.step_1.location.point:
             marker = params.step_1.location.point
             features.append(MapPoint.from_geo_point(marker))
+        else:
+            raise UserException("Please select a point on the map")
 
         return MapResult(features)
 
     @DataView("Data", duration_guess=1)  # only visible on "Step 2"
     def get_data_view(self, params, **kwargs):
         """Creates dataview for step 2 from the pv_calculation"""
-        e_yield = calculate_energy_generation(
+        energy_generation = calculate_energy_generation(
             params.step_1.location.point.lat, params.step_1.location.point.lon
         )
 
         data = DataGroup(
-            DataItem(label="Yearly energy yield", value=e_yield, suffix="Kwh/year")
+            DataItem(
+                label="Yearly energy yield", value=energy_generation, suffix="Kwh/year"
+            )
         )
 
         return DataResult(data)

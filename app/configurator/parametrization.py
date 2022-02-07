@@ -31,7 +31,6 @@ class ConfiguratorParametrization(Parametrization):
     step_1 = Step("Step 1 Home", views="get_map_view")  # no views
     step_1.location = Tab("Location")
     step_1.location.point = GeoPointField("enter a point")
-
     step_1.location.surface = NumberField("Surface area", suffix="m2", default=0)
 
     step_2 = Step("Step 2 Panels", views="get_data_view")
