@@ -24,9 +24,6 @@ def calculate_energy_generation(lat, lon):
     longitude = lon
     name = "Your"
 
-    # determine the altitude based on coordinates
-    altitude = 0
-
     # get the module and inverter specifications from SAM
     sandia_modules = pvlib.pvsystem.retrieve_sam("SandiaMod")
 
@@ -40,14 +37,16 @@ def calculate_energy_generation(lat, lon):
         "sapm"
     ]["open_rack_glass_glass"]
 
-    # retreive weather data
+    # retreive weather data and elevation (altitude)
 
-    weather = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)[0]
+    weather, months_selected, inputs, meta = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)
     weather.index.name = "utc_time"
 
     temp_air = weather["temp_air"]
     wind_speed = weather["wind_speed"]
     pressure = weather["pressure"]
+
+    altitude = inputs['location']['elevation']
 
     # declare system
     system = {"module": module, "inverter": inverter, "surface_azimuth": 180}

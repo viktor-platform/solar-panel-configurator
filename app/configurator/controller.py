@@ -9,7 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 Software.
 
 VIKTOR B.V. PROVIDES THIS SOFTWARE ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
-NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT
 SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
@@ -25,7 +25,7 @@ from .pv_calculations import calculate_energy_generation
 
 class Controller(ViktorController):
     """Controller class which acts as interface for the Configurator entity type.
-    Connects the Parametrization (left-side of web UI), with the Views (right-side of web UI."""
+    Connects the Parametrization (left-side of web UI), with the Views (right-side of web UI)."""
 
     label = "Configurator"
     parametrization = ConfiguratorParametrization(width=30)
