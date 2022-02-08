@@ -33,10 +33,7 @@ def calculate_energy_generation(latitude, longitude):
         "sapm"
     ]["open_rack_glass_glass"]
 
-    # retreive weather data
-    weather = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)[0]
     # retreive weather data and elevation (altitude)
-
     weather, *inputs = pvlib.iotools.get_pvgis_tmy(
         latitude, longitude, map_variables=True
     )
