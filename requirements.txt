@@ -1,0 +1,3 @@
+# viktor==12.9.0
+pvlib
+pandas
