@@ -15,7 +15,6 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 SOFTWARE.
 """
 from viktor.core import ViktorController
-from viktor.core import UserException
 from viktor.views import DataResult
 from viktor.views import DataView
 from viktor.views import DataItem
@@ -45,16 +44,43 @@ class Controller(ViktorController):
         if params.step_1.location.point:
             marker = params.step_1.location.point
             features.append(MapPoint.from_geo_point(marker))
-        else:
-            raise UserException("Please select a point on the map")
 
         return MapResult(features)
 
     @DataView("Data", duration_guess=1)  # only visible on "Step 2"
     def get_data_view(self, params, **kwargs):
         """Creates dataview for step 2 from the pv_calculation"""
+        type_dict = {'CEC Module': 'cecmod',
+                     'Sandia Module': 'sandiamod',
+                     'CEC Inverter' : 'cecinverter',
+                     'Sandia Inverter': 'sandiainverter'
+                     }
+        name_dict = {'First the CEC modules' : 'here',
+                     'Jinko Solar JKM260P-60 Module': 'Jinko Solar Co._ Ltd JKM260P-60',
+                     'Canadian Solar CS6K-270P Module': 'Canadian Solar Inc. CS6K-270P',
+                     'Canadian Solar CS6K-275M Module': 'Canadian Solar Inc. CS6K-275M',
+                     'Hanwha Q CELLS Q.PLUS BFR-G4.1 280 Module': 'Hanwha Q CELLS Q.PLUS BFR G4.1 280',
+                     'Hanwha Q CELLS Q.Peak-G4.1 300 Module': 'Hanwha Q CELLS Q.PEAK-G4.1 300',
+                     'Panasonic VBHN325SA 16 Module': 'SANYO ELECTRIC CO LTD OF PANASONIC GROUP VBHN325SA16',
+                     'LG LG320N1K-A5 Module': 'LG Electronics Inc. LG320N1K-A5',
+                     'Mission Solar MSE300SQ5T Module': 'Mission Solar Energy MSE300SQ5T',
+                     'itek Energy IT-360-SE72 Module': 'Itek Energy LLC iT-360-SE-72',
+                     'Then the Sandia modules': 'here',
+                     'AstroPower APX-120': 'AstroPower APX-120 [ 2001]',
+                     'BP Solar SX160B': 'BP Solar SX160B [2005 (E)]',
+                     'Kyocera Solar PV110': 'Kyocera Solar PV110 [2003 (E)]',
+                     'Mitsubishi PV - MF185UD4': 'Mitsubishi PV-MF185UD4 [2006 (E)]',
+                     'Sanyo HIP - 200BE11': 'Sanyo HIP-200BE11 [2006 (E)]',
+                     'Sharp ND - L3E1U': 'Sharp ND-L3E1U [2002 (E)]',
+                     'Siemens Solar SP75(6V)': 'Siemens Solar SP75 (6V) [2003 (E)]',
+                     'Suntech STP200S - 18 - ub - 1 Module': 'Suntech STP200S-18-ub-1 Module [2009 (E)]'}
+
         energy_generation = calculate_energy_generation(
-            params.step_1.location.point.lat, params.step_1.location.point.lon
+            params.step_1.location.point.lat,
+            params.step_1.location.point.lon,
+            type_dict[params.step_2.inverter_type],
+            type_dict[params.step_2.module_type],
+            name_dict[params.step_2.module_name]
         )
 
         data = DataGroup(
