@@ -18,30 +18,47 @@ import pandas as pd
 import pvlib
 
 
-def calculate_energy_generation(latitude, longitude):
+def calculate_energy_generation(latitude, longitude, inverter_type, module_type,
+                                module_name='Canadian_Solar_CS5P_220M___2009_',
+                                inverter_name='ABB__MICRO_0_25_I_OUTD_US_208__208V_'):
     """Calculates the yearly energy yield as a result of the coorinates"""
     name = "Your"
 
-    # determine the altitude based on coordinates
-    altitude = 0  # [m]
+    def translate_names(entry):
+        """Translates module and inverter names to suit with the SAM databases"""
+        bad_chars = ' -.()[]:+/",'
+        good_chars = '____________'
+        trans_dict = entry.maketrans(bad_chars, good_chars)
+        translated_entry = entry.translate(trans_dict)
 
-    # get the module and inverter specifications (type and name) from SAM
-    sandia_modules = pvlib.pvsystem.retrieve_sam("SandiaMod")
-    sapm_inverters = pvlib.pvsystem.retrieve_sam("cecinverter")
-    module = sandia_modules["Canadian_Solar_CS5P_220M___2009_"]
-    inverter = sapm_inverters["ABB__MICRO_0_25_I_OUTD_US_208__208V_"]
+        return translated_entry
+
+    # get the module and inverter databases from SAM
+    url_dict = {'cecmod': 'https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/CEC%20Modules.csv',
+            'sandiamod': 'https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/Sandia%20Modules.csv',
+            'cecinverter': 'https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/CEC%20Inverters.csv',
+            'sandiainverter': 'https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/CEC%20Inverters.csv'
+                }
+    # get module and inverter information from the databases
+    modules_types = pvlib.pvsystem.retrieve_sam(None, url_dict[module_type])
+    inverters_types = pvlib.pvsystem.retrieve_sam(None, url_dict[inverter_type])
+    module = modules_types[translate_names(module_name)]
+    inverter = inverters_types[translate_names(inverter_name)]
 
     # get temperature specifications of module materials (default most used in consumer-systems)
     temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS[
         "sapm"
     ]["open_rack_glass_glass"]
 
-    # retreive weather data
-    weather = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)[0]
+    # retreive weather data and elevation (altitude)
+    weather, *inputs = pvlib.iotools.get_pvgis_tmy(
+        latitude, longitude, map_variables=True
+    )
     weather.index.name = "utc_time"
     temp_air = weather["temp_air"]  # [degrees_C]
     wind_speed = weather["wind_speed"]  # [m/s]
     pressure = weather["pressure"]  # [Pa]
+    altitude = inputs[1]["location"]["elevation"]  # [m]
 
     # declare system
     system = {"module": module, "inverter": inverter, "surface_azimuth": 180}
@@ -78,9 +95,15 @@ def calculate_energy_generation(latitude, longitude):
         dni_extra=dni_extra,
         model="haydavies",
     )
-    tcell = pvlib.temperature.sapm_cell(
+    # tcell = pvlib.temperature.sapm_cell(
+    #     total_irrad["poa_global"], temp_air, wind_speed, **temperature_model_parameters
+    # )
+    tcell = pvlib.temperature.pvsyst_cell(
         total_irrad["poa_global"], temp_air, wind_speed, **temperature_model_parameters
     )
+    # effective_irradiance = pvlib.pvsystem.sapm_effective_irradiance(
+    #     total_irrad["poa_direct"], total_irrad["poa_diffuse"], am_abs, aoi, module
+    # )
     effective_irradiance = pvlib.pvsystem.sapm_effective_irradiance(
         total_irrad["poa_direct"], total_irrad["poa_diffuse"], am_abs, aoi, module
     )
