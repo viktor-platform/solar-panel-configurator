@@ -20,7 +20,7 @@ import pvlib
 
 def calculate_energy_generation(latitude, longitude, inverter_type, module_type,
                                 module_name='Canadian_Solar_CS5P_220M___2009_',
-                                inverter_name='ABB__MICRO_0_25_I_OUTD_US_208__208V_'):
+                                inverter_name='ABB__MICRO_0_25_I_OUTD_US_208__208V_', area=2):
     """Calculates the yearly energy yield as a result of the coorinates"""
     name = "Your"
 
@@ -45,10 +45,18 @@ def calculate_energy_generation(latitude, longitude, inverter_type, module_type,
     module = modules_types[translate_names(module_name)]
     inverter = inverters_types[translate_names(inverter_name)]
 
+    # get module area information and calculate the amount of modules possible
+    if module_type == 'cecmod':
+        surface_area = module['A_c']
+    elif module_type == 'sandiamod':
+        surface_area = module['Area']
+    else:
+        raise ValueError('Incorrect value for module type')
+
+    nr_modules = area // surface_area
+
     # get temperature specifications of module materials (default most used in consumer-systems)
-    temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS[
-        "sapm"
-    ]["open_rack_glass_glass"]
+    temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS["sapm"]["open_rack_glass_glass"]
 
     # retreive weather data and elevation (altitude)
     weather, *inputs = pvlib.iotools.get_pvgis_tmy(
@@ -95,15 +103,11 @@ def calculate_energy_generation(latitude, longitude, inverter_type, module_type,
         dni_extra=dni_extra,
         model="haydavies",
     )
-    # tcell = pvlib.temperature.sapm_cell(
-    #     total_irrad["poa_global"], temp_air, wind_speed, **temperature_model_parameters
-    # )
-    tcell = pvlib.temperature.pvsyst_cell(
+
+    tcell = pvlib.temperature.sapm_cell(
         total_irrad["poa_global"], temp_air, wind_speed, **temperature_model_parameters
     )
-    # effective_irradiance = pvlib.pvsystem.sapm_effective_irradiance(
-    #     total_irrad["poa_direct"], total_irrad["poa_diffuse"], am_abs, aoi, module
-    # )
+
     effective_irradiance = pvlib.pvsystem.sapm_effective_irradiance(
         total_irrad["poa_direct"], total_irrad["poa_diffuse"], am_abs, aoi, module
     )
@@ -126,6 +130,7 @@ def calculate_energy_generation(latitude, longitude, inverter_type, module_type,
     energies = pd.Series(energies)
 
     # final result in KWh*hrs
-    energy_yield = int(energies.round(0)) / 1000
+    energy_yield_per_module = int(energies.round(0)) / 1000
+    energy_yield = energy_yield_per_module * nr_modules
 
     return energy_yield

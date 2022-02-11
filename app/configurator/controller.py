@@ -80,12 +80,13 @@ class Controller(ViktorController):
             params.step_1.location.point.lon,
             type_dict[params.step_2.inverter_type],
             type_dict[params.step_2.module_type],
-            name_dict[params.step_2.module_name]
+            name_dict[params.step_2.module_name],
+            area=params.step_1.location.surface
         )
 
         data = DataGroup(
             DataItem(
-                label="Yearly energy yield", value=energy_generation, suffix="Kwh/year"
+                label="Yearly energy yield", value=energy_generation, suffix="Kwh/year", number_of_decimals=3
             )
         )
 
