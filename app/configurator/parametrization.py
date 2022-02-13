@@ -48,6 +48,17 @@ def _get_module_name_list(params: Munch, ** kwargs):
                 'Suntech STP200S - 18 - ub - 1 Module']
     return []
 
+def _get_inverter_name_list(params: Munch, ** kwargs):
+    """Create list of options for the inverter name dependent on the type"""
+    if params.step_2.inverter_type == 'CEC Inverter':
+        return ['ABB: MICRO-0.3 Inverter',
+                'Outback Power Tech. Inverter',
+                'Hanwa Q-Cells Inverter']
+    if params.step_2.inverter_type == 'Sandia Inverter':
+        return ['Generac Power Systems Inverter',
+                'Delta Electronics Inverter',
+                'Chint Power Systems Inverter']
+    return []
 
 class ConfiguratorParametrization(Parametrization):
     """Defines the input fields for the mapview (step 1) and dataview (step 2)"""
@@ -78,3 +89,6 @@ class ConfiguratorParametrization(Parametrization):
     step_2.module_name = OptionField("Module model",
                                      options=_get_module_name_list,
                                      default='Canadian Solar Inc. CS6K-270P')
+
+    step_2.inverter_name = OptionField("Inverter model",
+                                     options=_get_inverter_name_list)

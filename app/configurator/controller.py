@@ -33,7 +33,7 @@ class Controller(ViktorController):
     Connects the Parametrization (left-side of web UI), with the Views (right-side of web UI)."""
 
     label = "Configurator"
-    parametrization = ConfiguratorParametrization(width=30)
+    parametrization = ConfiguratorParametrization(width=20)
     viktor_convert_entity_field = True
 
     @MapView("Map", duration_guess=1)  # only visible on "Step 1"
@@ -52,10 +52,10 @@ class Controller(ViktorController):
         """Creates dataview for step 2 from the pv_calculation"""
         type_dict = {'CEC Module': 'cecmod',
                      'Sandia Module': 'sandiamod',
-                     'CEC Inverter' : 'cecinverter',
+                     'CEC Inverter': 'cecinverter',
                      'Sandia Inverter': 'sandiainverter'
                      }
-        name_dict = {'First the CEC modules' : 'here',
+        module_name_dict = {'First the CEC modules' : 'here',
                      'Jinko Solar JKM260P-60 Module': 'Jinko Solar Co._ Ltd JKM260P-60',
                      'Canadian Solar CS6K-270P Module': 'Canadian Solar Inc. CS6K-270P',
                      'Canadian Solar CS6K-275M Module': 'Canadian Solar Inc. CS6K-275M',
@@ -75,12 +75,23 @@ class Controller(ViktorController):
                      'Siemens Solar SP75(6V)': 'Siemens Solar SP75 (6V) [2003 (E)]',
                      'Suntech STP200S - 18 - ub - 1 Module': 'Suntech STP200S-18-ub-1 Module [2009 (E)]'}
 
+        inverter_name_dict = {'First the CEC modules': 'here',
+                            'ABB: MICRO-0.3 Inverter': 'ABB: MICRO-0.3-I-OUTD-US-240 [240V]',
+                            'Outback Power Tech. Inverter': ' OutBack Power Technologies - Inc : GS8048A [240V]',
+                            'Hanwa Q-Cells Inverter': 'Hanwha Q CELLS America Inc : Q.HOME+ HYB-G1-7.6 [240V]',
+                            'Then the Sandia modules': 'here',
+                            'Generac Power Systems Inverter': ' Generac Power Systems: XVT076A03 [240V]',
+                            'Delta Electronics Inverter': ' Delta Electronics: E4-TL-US(AC) [240V]',
+                            'Chint Power Systems Inverter': ' Chint Power Systems America: CPS ECB30KTL-O/US [480V]'
+                            }
+
         energy_generation = calculate_energy_generation(
             params.step_1.location.point.lat,
             params.step_1.location.point.lon,
             type_dict[params.step_2.inverter_type],
             type_dict[params.step_2.module_type],
-            name_dict[params.step_2.module_name],
+            module_name_dict[params.step_2.module_name],
+            inverter_name_dict[params.step_2.inverter_name],
             area=params.step_1.location.surface
         )
 

@@ -16,11 +16,11 @@ SOFTWARE.
 """
 import pandas as pd
 import pvlib
+import matplotlib.pyplot as plt
 
 
 def calculate_energy_generation(latitude, longitude, inverter_type, module_type,
-                                module_name='Canadian_Solar_CS5P_220M___2009_',
-                                inverter_name='ABB__MICRO_0_25_I_OUTD_US_208__208V_', area=2):
+                                module_name, inverter_name, area=2):
     """Calculates the yearly energy yield as a result of the coorinates"""
     name = "Your"
 
@@ -115,22 +115,18 @@ def calculate_energy_generation(latitude, longitude, inverter_type, module_type,
     ac_yield = pvlib.inverter.sandia(dc_yield["v_mp"], dc_yield["p_mp"], inverter)
 
     # prepare data for presentation and visualisation
-    acdp = ac_yield.to_frame()
-    acdp["utc_time"] = pd.to_datetime(acdp.index)
-    acdp["utc_time"] = acdp.index.strftime("%m-%d %H:%M:%S")
-    acdp.columns = ["val", "dat"]
+    acdf = ac_yield.to_frame()
+    acdf["utc_time"] = pd.to_datetime(acdf.index)
+    acdf["utc_time"] = acdf.index.strftime("%m-%d %H:%M:%S")
+    acdf.columns = ["val", "dat"]
 
     # possible plot
-    acdp.plot(x="dat", y="val")
-    annual_energy = acdp["val"].sum()
+    acdf.plot(x="dat", y="val")
+    annual_energy = acdf["val"].sum()
     # plt.show()
 
-    energies = {}
-    energies[name] = annual_energy
-    energies = pd.Series(energies)
-
     # final result in KWh*hrs
-    energy_yield_per_module = int(energies.round(0)) / 1000
+    energy_yield_per_module = int(annual_energy) / 1000
     energy_yield = energy_yield_per_module * nr_modules
 
     return energy_yield
