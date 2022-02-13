@@ -16,13 +16,11 @@ SOFTWARE.
 """
 import pandas as pd
 import pvlib
-import matplotlib.pyplot as plt
 
 
 def calculate_energy_generation(latitude, longitude, inverter_type, module_type,
                                 module_name, inverter_name, area=2):
     """Calculates the yearly energy yield as a result of the coorinates"""
-    name = "Your"
 
     def translate_names(entry):
         """Translates module and inverter names to suit with the SAM databases"""
@@ -129,4 +127,4 @@ def calculate_energy_generation(latitude, longitude, inverter_type, module_type,
     energy_yield_per_module = int(annual_energy) / 1000
     energy_yield = energy_yield_per_module * nr_modules
 
-    return energy_yield
+    return energy_yield, nr_modules
