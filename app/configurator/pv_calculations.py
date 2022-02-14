@@ -121,6 +121,7 @@ def calculate_energy_generation(
     acdf["utc_time"] = pd.to_datetime(acdf.index)
     acdf["utc_time"] = acdf.index.strftime("%m-%d %H:%M:%S")
     acdf.columns = ["val", "dat"]
+    acdf['cumulative_yield'] = acdf['val'].cumsum(axis=0)
 
     # possible plot
     acdf.plot(x="dat", y="val")
@@ -131,4 +132,4 @@ def calculate_energy_generation(
     energy_yield_per_module = int(annual_energy) / 1000
     energy_yield = energy_yield_per_module * nr_modules
 
-    return energy_yield, nr_modules
+    return energy_yield, nr_modules, acdf

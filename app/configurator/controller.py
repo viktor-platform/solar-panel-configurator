@@ -22,6 +22,8 @@ from viktor.views import DataGroup
 from viktor.views import MapPoint
 from viktor.views import MapResult
 from viktor.views import MapView
+from viktor.views import PlotlyView
+from viktor.views import PlotlyResult
 
 from munch import Munch
 from .parametrization import ConfiguratorParametrization
@@ -33,7 +35,7 @@ class Controller(ViktorController):
     Connects the Parametrization (left-side of web UI), with the Views (right-side of web UI)."""
 
     label = "Configurator"
-    parametrization = ConfiguratorParametrization(width=20)
+    parametrization = ConfiguratorParametrization(width=30)
     viktor_convert_entity_field = True
 
     @MapView("Map", duration_guess=1)  # only visible on "Step 1"
@@ -195,3 +197,130 @@ class Controller(ViktorController):
         data = DataGroup(energy_info, inverter_cost, module_cost, total_cost)
 
         return DataResult(data)
+
+    @PlotlyView('Plot', duration_guess=1) #only visible on "Step 3"
+    def get_plotly_view(self, params, **kwargs):
+        """Shows the plot of the energy yield with break-even point"""
+
+        # re-do the energy calculation:
+        type_dict = {
+            "CEC Module": "cecmod",
+            "Sandia Module": "sandiamod",
+            "CEC Inverter": "cecinverter",
+            "Sandia Inverter": "sandiainverter",
+        }
+        module_name_dict = {
+            "First the CEC modules": "here",
+            "Jinko Solar JKM260P-60 Module": {
+                "name": "Jinko Solar Co._ Ltd JKM260P-60",
+                "price": 132.32,
+            },
+            "Canadian Solar CS6K-270P Module": {
+                "name": "Canadian Solar Inc. CS6K-270P",
+                "price": 155.00,
+            },
+            "Canadian Solar CS6K-275M Module": {
+                "name": "Canadian Solar Inc. CS6K-275M",
+                "price": 204.60,
+            },
+            "Hanwha Q CELLS Q.PLUS BFR-G4.1 280 Module": {
+                "name": "Hanwha Q CELLS Q.PLUS BFR G4.1 280",
+                "price": 178.10,
+            },
+            "Hanwha Q CELLS Q.Peak-G4.1 300 Module": {
+                "name": "Hanwha Q CELLS Q.PEAK-G4.1 300",
+                "price": 208.80,
+            },
+            "Panasonic VBHN325SA 16 Module": {
+                "name": "SANYO ELECTRIC CO LTD OF PANASONIC GROUP VBHN325SA16",
+                "price": 337.40,
+            },
+            "LG LG320N1K-A5 Module": {
+                "name": "LG Electronics Inc. LG320N1K-A5",
+                "price": 275.20,
+            },
+            "Mission Solar MSE300SQ5T Module": {
+                "name": "Mission Solar Energy MSE300SQ5T",
+                "price": 208.00,
+            },
+            "itek Energy IT-360-SE72 Module": {
+                "name": "Itek Energy LLC iT-360-SE-72",
+                "price": 132.32,
+            },
+            "Then the Sandia modules": "here",
+            "AstroPower APX-120": {
+                "name": "AstroPower APX-120 [ 2001]",
+                "price": 132.32,
+            },
+            "BP Solar SX160B": {"name": "BP Solar SX160B [2005 (E)]", "price": 132.32},
+            "Kyocera Solar PV110": {
+                "name": "Kyocera Solar PV110 [2003 (E)]",
+                "price": 132.32,
+            },
+            "Mitsubishi PV - MF185UD4": {
+                "name": "Mitsubishi PV-MF185UD4 [2006 (E)]",
+                "price": 154.20,
+            },
+            "Sanyo HIP - 200BE11": {
+                "name": "Sanyo HIP-200BE11 [2006 (E)]",
+                "price": 132.32,
+            },
+            "Sharp ND - L3E1U": {"name": "Sharp ND-L3E1U [2002 (E)]", "price": 675.00},
+            "Siemens Solar SP75(6V)": {
+                "name": "Siemens Solar SP75 (6V) [2003 (E)]",
+                "price": 50.00,
+            },
+            "Suntech STP200S - 18 - ub - 1 Module": {
+                "name": "Suntech STP200S-18-ub-1 Module [2009 (E)]",
+                "price": 480.00,
+            },
+        }
+        inverter_name_dict = {
+            "First the CEC modules": "here",
+            "ABB: MICRO-0.3 Inverter": {
+                "name": "ABB: MICRO-0.3-I-OUTD-US-240 [240V]",
+                "price": 173.19,
+            },
+            "Outback Power Tech. Inverter": {
+                "name": " OutBack Power Technologies - Inc : GS8048A [240V]",
+                "price": 3791.88,
+            },
+            "Hanwa Q-Cells Inverter": {
+                "name": "Hanwha Q CELLS America Inc : Q.HOME+ HYB-G1-7.6 [240V]",
+                "price": 999.99,
+            },
+            "Then the Sandia modules": "here",
+            "Generac Power Systems Inverter": {
+                "name": " Generac Power Systems: XVT076A03 [240V]",
+                "price": 3431.35,
+            },
+            "Delta Electronics Inverter": {
+                "name": " Delta Electronics: E4-TL-US(AC) [240V]",
+                "price": 999.99,
+            },
+            "Chint Power Systems Inverter": {
+                "name": " Chint Power Systems America: CPS ECB30KTL-O/US [480V]",
+                "price": 999.99,
+            },
+        }
+
+        energy_generation = calculate_energy_generation(
+            params.step_1.location.point.lat,
+            params.step_1.location.point.lon,
+            type_dict[params.step_2.inverter_type],
+            type_dict[params.step_2.module_type],
+            module_name_dict[params.step_2.module_name]["name"],
+            inverter_name_dict[params.step_2.inverter_name]["name"],
+            area=params.step_1.location.surface,
+        )
+
+        yield_df = energy_generation[2]
+        x = list(yield_df['dat'])
+        y = list(yield_df['cumulative_yield'])
+
+        fig = {
+            "data": [{"type": "bar", "x": x, "y": y}],
+            "layout": {"title": {"text": "Energy generation over time"}}
+        }
+
+        return PlotlyResult(fig)
