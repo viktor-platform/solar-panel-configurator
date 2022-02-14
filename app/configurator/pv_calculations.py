@@ -122,6 +122,7 @@ def calculate_energy_generation(
     acdf["utc_time"] = acdf.index.strftime("%m-%d %H:%M:%S")
     acdf.columns = ["val", "dat"]
     acdf['cumulative_yield'] = acdf['val'].cumsum(axis=0)
+    acdf.fillna(0, inplace=True)
 
     # possible plot
     acdf.plot(x="dat", y="val")

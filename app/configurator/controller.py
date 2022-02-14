@@ -25,6 +25,8 @@ from viktor.views import MapView
 from viktor.views import PlotlyView
 from viktor.views import PlotlyResult
 
+import pandas as pd
+
 from munch import Munch
 from .parametrization import ConfiguratorParametrization
 from .pv_calculations import calculate_energy_generation
@@ -315,8 +317,8 @@ class Controller(ViktorController):
         )
 
         yield_df = energy_generation[2]
-        x = list(yield_df['dat'])
-        y = list(yield_df['cumulative_yield'])
+        x = yield_df['dat'].to_list()
+        y = yield_df['cumulative_yield'].to_list()
 
         fig = {
             "data": [{"type": "bar", "x": x, "y": y}],

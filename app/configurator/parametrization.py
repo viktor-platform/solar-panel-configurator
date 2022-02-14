@@ -88,22 +88,25 @@ class ConfiguratorParametrization(Parametrization):
     step_2.inverter_type = OptionField(
         "Inverter type",
         options=["Sandia Inverter", "CEC Inverter"],
-        default="Sandia Inverter", flex=50
+        default="Sandia Inverter", flex=50,
+        autoselect_single_option=True
     )
     # add comment explaining that the same protocols from the two organisations are used for the modules
     step_2.module_type = OptionField(
-        "Module type", options=["Sandia Module", "CEC Module"], default="Sandia Module", flex=50
+        "Module type", options=["Sandia Module", "CEC Module"], default="Sandia Module", flex=50,
+        autoselect_single_option=True
     )
 
     step_2.inverter_name = OptionField(
-        "Inverter model", options=_get_inverter_name_list, flex=50
+        "Inverter model", options=_get_inverter_name_list, flex=50, autoselect_single_option=True
     )
 
     step_2.module_name = OptionField(
         "Module model",
         options=_get_module_name_list,
-        default="Canadian Solar Inc. CS6K-270P", flex=50
+        default="Canadian Solar Inc. CS6K-270P", flex=50, autoselect_single_option=True
     )
 
     # Step 3 contains the calculation of the break-even point and visualisation thereof
     step_3 = Step('Step 3 Visualisation', views='get_plotly_view')
+    step_3.dummy = NumberField('Dummy')
