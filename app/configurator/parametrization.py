@@ -98,15 +98,17 @@ class ConfiguratorParametrization(Parametrization):
     )
 
     step_2.inverter_name = OptionField(
-        "Inverter model", options=_get_inverter_name_list, flex=50, autoselect_single_option=True
+        "Inverter model", options=_get_inverter_name_list, default="AstroPower APX-120",
+        flex=50, autoselect_single_option=True,
+
     )
 
     step_2.module_name = OptionField(
         "Module model",
         options=_get_module_name_list,
-        default="Canadian Solar Inc. CS6K-270P", flex=50, autoselect_single_option=True
+        flex=50, autoselect_single_option=True, default='AstroPower APX-120 [ 2001]'
     )
 
     # Step 3 contains the calculation of the break-even point and visualisation thereof
     step_3 = Step('Step 3 Visualisation', views='get_plotly_view')
-    step_3.dummy = NumberField('Dummy')
+    step_3.kwh_cost = NumberField('Enter KWh price to calculate break-even', suffix='€/KWh', default=0.22, flex=80)

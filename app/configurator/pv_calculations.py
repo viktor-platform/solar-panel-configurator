@@ -19,7 +19,7 @@ import pvlib
 
 
 def calculate_energy_generation(
-    latitude, longitude, inverter_type, module_type, module_name, inverter_name, area=2
+    latitude, longitude, inverter_type, module_type, inverter_name, module_name, area=2
 ):
     """Calculates the yearly energy yield as a result of the coorinates"""
 
@@ -114,13 +114,15 @@ def calculate_energy_generation(
         total_irrad["poa_direct"], total_irrad["poa_diffuse"], am_abs, aoi, module
     )
     dc_yield = pvlib.pvsystem.sapm(effective_irradiance, tcell, module)
-    ac_yield = pvlib.inverter.sandia(dc_yield["v_mp"], dc_yield["p_mp"], inverter)
+    ac_yield = pvlib.inverter.sandia(dc_yield["v_mp"] * nr_modules, dc_yield["p_mp"] * nr_modules, inverter)
+
 
     # prepare data for presentation and visualisation
     acdf = ac_yield.to_frame()
     acdf["utc_time"] = pd.to_datetime(acdf.index)
     acdf["utc_time"] = acdf.index.strftime("%m-%d %H:%M:%S")
     acdf.columns = ["val", "dat"]
+    acdf.val *= 0.001
     acdf['cumulative_yield'] = acdf['val'].cumsum(axis=0)
     acdf.fillna(0, inplace=True)
 
@@ -130,7 +132,7 @@ def calculate_energy_generation(
     # plt.show()
 
     # final result in KWh*hrs
-    energy_yield_per_module = int(annual_energy) / 1000
-    energy_yield = energy_yield_per_module * nr_modules
+    energy_yield_per_module = int(annual_energy)
+    energy_yield = energy_yield_per_module
 
     return energy_yield, nr_modules, acdf

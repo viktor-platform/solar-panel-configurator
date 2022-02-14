@@ -161,8 +161,8 @@ class Controller(ViktorController):
             params.step_1.location.point.lon,
             type_dict[params.step_2.inverter_type],
             type_dict[params.step_2.module_type],
-            module_name_dict[params.step_2.module_name]["name"],
             inverter_name_dict[params.step_2.inverter_name]["name"],
+            module_name_dict[params.step_2.module_name]["name"],
             area=params.step_1.location.surface,
         )
 
@@ -311,17 +311,22 @@ class Controller(ViktorController):
             params.step_1.location.point.lon,
             type_dict[params.step_2.inverter_type],
             type_dict[params.step_2.module_type],
-            module_name_dict[params.step_2.module_name]["name"],
             inverter_name_dict[params.step_2.inverter_name]["name"],
+            module_name_dict[params.step_2.module_name]["name"],
             area=params.step_1.location.surface,
         )
 
         yield_df = energy_generation[2]
+        break_even = (inverter_name_dict[params.step_2.inverter_name]["price"] +
+                      module_name_dict[params.step_2.module_name]["price"] *
+                      energy_generation[1]) / params.step_3.kwh_cost
+
         x = yield_df['dat'].to_list()
         y = yield_df['cumulative_yield'].to_list()
+        z = [break_even] * len(x)
 
         fig = {
-            "data": [{"type": "bar", "x": x, "y": y}],
+            "data": [{"type": "bar", "x": x, "y": y},{"type": "line", "x": x, "y": z}],
             "layout": {"title": {"text": "Energy generation over time"}}
         }
 
