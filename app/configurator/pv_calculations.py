@@ -18,25 +18,27 @@ import pandas as pd
 import pvlib
 
 
-def calculate_energy_generation(latitude, longitude, inverter_type, module_type,
-                                module_name, inverter_name, area=2):
+def calculate_energy_generation(
+    latitude, longitude, inverter_type, module_type, module_name, inverter_name, area=2
+):
     """Calculates the yearly energy yield as a result of the coorinates"""
 
     def translate_names(entry):
         """Translates module and inverter names to suit with the SAM databases"""
         bad_chars = ' -.()[]:+/",'
-        good_chars = '____________'
+        good_chars = "____________"
         trans_dict = entry.maketrans(bad_chars, good_chars)
         translated_entry = entry.translate(trans_dict)
 
         return translated_entry
 
     # get the module and inverter databases from SAM
-    url_dict = {'cecmod': 'https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/CEC%20Modules.csv',
-            'sandiamod': 'https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/Sandia%20Modules.csv',
-            'cecinverter': 'https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/CEC%20Inverters.csv',
-            'sandiainverter': 'https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/CEC%20Inverters.csv'
-                }
+    url_dict = {
+        "cecmod": "https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/CEC%20Modules.csv",
+        "sandiamod": "https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/Sandia%20Modules.csv",
+        "cecinverter": "https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/CEC%20Inverters.csv",
+        "sandiainverter": "https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/CEC%20Inverters.csv",
+    }
     # get module and inverter information from the databases
     modules_types = pvlib.pvsystem.retrieve_sam(None, url_dict[module_type])
     inverters_types = pvlib.pvsystem.retrieve_sam(None, url_dict[inverter_type])
@@ -44,17 +46,19 @@ def calculate_energy_generation(latitude, longitude, inverter_type, module_type,
     inverter = inverters_types[translate_names(inverter_name)]
 
     # get module area information and calculate the amount of modules possible
-    if module_type == 'cecmod':
-        surface_area = module['A_c']
-    elif module_type == 'sandiamod':
-        surface_area = module['Area']
+    if module_type == "cecmod":
+        surface_area = module["A_c"]
+    elif module_type == "sandiamod":
+        surface_area = module["Area"]
     else:
-        raise ValueError('Incorrect value for module type')
+        raise ValueError("Incorrect value for module type")
 
     nr_modules = area // surface_area
 
     # get temperature specifications of module materials (default most used in consumer-systems)
-    temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS["sapm"]["open_rack_glass_glass"]
+    temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS[
+        "sapm"
+    ]["open_rack_glass_glass"]
 
     # retreive weather data and elevation (altitude)
     weather, *inputs = pvlib.iotools.get_pvgis_tmy(
