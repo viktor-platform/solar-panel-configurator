@@ -25,8 +25,6 @@ from viktor.views import MapView
 from viktor.views import PlotlyView
 from viktor.views import PlotlyResult
 
-import pandas as pd
-
 from munch import Munch
 from .parametrization import ConfiguratorParametrization
 from .pv_calculations import calculate_energy_generation
@@ -321,12 +319,12 @@ class Controller(ViktorController):
                       module_name_dict[params.step_2.module_name]["price"] *
                       energy_generation[1]) / params.step_3.kwh_cost
 
-        x = yield_df['dat'].to_list()
-        y = yield_df['cumulative_yield'].to_list()
-        z = [break_even] * len(x)
+        x_dat = yield_df['dat'].to_list()
+        y_dat = yield_df['cumulative_yield'].to_list()
+        z_dat = [break_even] * len(x_dat)
 
         fig = {
-            "data": [{"type": "bar", "x": x, "y": y},{"type": "line", "x": x, "y": z}],
+            "data": [{"type": "bar", "x": x_dat, "y": y_dat}, {"type": "line", "x": x_dat, "y": z_dat}],
             "layout": {"title": {"text": "Energy generation over time"}}
         }
 
