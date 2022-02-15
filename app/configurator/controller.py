@@ -53,50 +53,10 @@ class Controller(ViktorController):
     def get_data_view(self, params, **kwargs):
         """Creates dataview for step 2 from the pv_calculation"""
         type_dict = {
-            "CEC Module": "cecmod",
-            "Sandia Module": "sandiamod",
-            "CEC Inverter": "cecinverter",
-            "Sandia Inverter": "sandiainverter",
+            "California Energy Commission": "cecinverter",
+            "Sandia National Laboratories": "sandiainverter",
         }
         module_name_dict = {
-            "First the CEC modules": "here",
-            "Jinko Solar JKM260P-60 Module": {
-                "name": "Jinko Solar Co._ Ltd JKM260P-60",
-                "price": 132.32,
-            },
-            "Canadian Solar CS6K-270P Module": {
-                "name": "Canadian Solar Inc. CS6K-270P",
-                "price": 155.00,
-            },
-            "Canadian Solar CS6K-275M Module": {
-                "name": "Canadian Solar Inc. CS6K-275M",
-                "price": 204.60,
-            },
-            "Hanwha Q CELLS Q.PLUS BFR-G4.1 280 Module": {
-                "name": "Hanwha Q CELLS Q.PLUS BFR G4.1 280",
-                "price": 178.10,
-            },
-            "Hanwha Q CELLS Q.Peak-G4.1 300 Module": {
-                "name": "Hanwha Q CELLS Q.PEAK-G4.1 300",
-                "price": 208.80,
-            },
-            "Panasonic VBHN325SA 16 Module": {
-                "name": "SANYO ELECTRIC CO LTD OF PANASONIC GROUP VBHN325SA16",
-                "price": 337.40,
-            },
-            "LG LG320N1K-A5 Module": {
-                "name": "LG Electronics Inc. LG320N1K-A5",
-                "price": 275.20,
-            },
-            "Mission Solar MSE300SQ5T Module": {
-                "name": "Mission Solar Energy MSE300SQ5T",
-                "price": 208.00,
-            },
-            "itek Energy IT-360-SE72 Module": {
-                "name": "Itek Energy LLC iT-360-SE-72",
-                "price": 132.32,
-            },
-            "Then the Sandia modules": "here",
             "AstroPower APX-120": {
                 "name": "AstroPower APX-120 [ 2001]",
                 "price": 132.32,
@@ -126,8 +86,7 @@ class Controller(ViktorController):
         }
 
         inverter_name_dict = {
-            "First the CEC modules": "here",
-            "ABB: MICRO-0.3 Inverter": {
+            "ABB: MICRO-0.3 Inverter": {                        # First three CEC Inverters
                 "name": "ABB: MICRO-0.3-I-OUTD-US-240 [240V]",
                 "price": 173.19,
             },
@@ -139,8 +98,7 @@ class Controller(ViktorController):
                 "name": "Hanwha Q CELLS America Inc : Q.HOME+ HYB-G1-7.6 [240V]",
                 "price": 999.99,
             },
-            "Then the Sandia modules": "here",
-            "Generac Power Systems Inverter": {
+            "Generac Power Systems Inverter": {                 # Second three Sandia Inverters
                 "name": " Generac Power Systems: XVT076A03 [240V]",
                 "price": 3431.35,
             },
@@ -157,8 +115,7 @@ class Controller(ViktorController):
         energy_generation = calculate_energy_generation(
             params.step_1.location.point.lat,
             params.step_1.location.point.lon,
-            type_dict[params.step_2.inverter_type],
-            type_dict[params.step_2.module_type],
+            type_dict[params.step_2.system_type],
             inverter_name_dict[params.step_2.inverter_name]["name"],
             module_name_dict[params.step_2.module_name]["name"],
             area=params.step_1.location.surface,
@@ -204,50 +161,10 @@ class Controller(ViktorController):
 
         # re-do the energy calculation:
         type_dict = {
-            "CEC Module": "cecmod",
-            "Sandia Module": "sandiamod",
-            "CEC Inverter": "cecinverter",
-            "Sandia Inverter": "sandiainverter",
+            "California Energy Commission": "cecinverter",
+            "Sandia National Laboratories": "sandiainverter",
         }
         module_name_dict = {
-            "First the CEC modules": "here",
-            "Jinko Solar JKM260P-60 Module": {
-                "name": "Jinko Solar Co._ Ltd JKM260P-60",
-                "price": 132.32,
-            },
-            "Canadian Solar CS6K-270P Module": {
-                "name": "Canadian Solar Inc. CS6K-270P",
-                "price": 155.00,
-            },
-            "Canadian Solar CS6K-275M Module": {
-                "name": "Canadian Solar Inc. CS6K-275M",
-                "price": 204.60,
-            },
-            "Hanwha Q CELLS Q.PLUS BFR-G4.1 280 Module": {
-                "name": "Hanwha Q CELLS Q.PLUS BFR G4.1 280",
-                "price": 178.10,
-            },
-            "Hanwha Q CELLS Q.Peak-G4.1 300 Module": {
-                "name": "Hanwha Q CELLS Q.PEAK-G4.1 300",
-                "price": 208.80,
-            },
-            "Panasonic VBHN325SA 16 Module": {
-                "name": "SANYO ELECTRIC CO LTD OF PANASONIC GROUP VBHN325SA16",
-                "price": 337.40,
-            },
-            "LG LG320N1K-A5 Module": {
-                "name": "LG Electronics Inc. LG320N1K-A5",
-                "price": 275.20,
-            },
-            "Mission Solar MSE300SQ5T Module": {
-                "name": "Mission Solar Energy MSE300SQ5T",
-                "price": 208.00,
-            },
-            "itek Energy IT-360-SE72 Module": {
-                "name": "Itek Energy LLC iT-360-SE-72",
-                "price": 132.32,
-            },
-            "Then the Sandia modules": "here",
             "AstroPower APX-120": {
                 "name": "AstroPower APX-120 [ 2001]",
                 "price": 132.32,
@@ -276,8 +193,7 @@ class Controller(ViktorController):
             },
         }
         inverter_name_dict = {
-            "First the CEC modules": "here",
-            "ABB: MICRO-0.3 Inverter": {
+            "ABB: MICRO-0.3 Inverter": {  # First three CEC Inverters
                 "name": "ABB: MICRO-0.3-I-OUTD-US-240 [240V]",
                 "price": 173.19,
             },
@@ -289,8 +205,7 @@ class Controller(ViktorController):
                 "name": "Hanwha Q CELLS America Inc : Q.HOME+ HYB-G1-7.6 [240V]",
                 "price": 999.99,
             },
-            "Then the Sandia modules": "here",
-            "Generac Power Systems Inverter": {
+            "Generac Power Systems Inverter": {  # Second three Sandia Inverters
                 "name": " Generac Power Systems: XVT076A03 [240V]",
                 "price": 3431.35,
             },
@@ -307,8 +222,7 @@ class Controller(ViktorController):
         energy_generation = calculate_energy_generation(
             params.step_1.location.point.lat,
             params.step_1.location.point.lon,
-            type_dict[params.step_2.inverter_type],
-            type_dict[params.step_2.module_type],
+            type_dict[params.step_2.system_type],
             inverter_name_dict[params.step_2.inverter_name]["name"],
             module_name_dict[params.step_2.module_name]["name"],
             area=params.step_1.location.surface,

@@ -25,44 +25,15 @@ from viktor.parametrization import (
 )
 from munch import Munch
 
-
-def _get_module_name_list(params: Munch, **kwargs):
-    """Create list of options for the module name dependent on the type"""
-    if params.step_2.module_type == "CEC Module":
-        return [
-            "Jinko Solar JKM260P-60 Module",
-            "Canadian Solar CS6K-270P Module",
-            "Canadian Solar CS6K-275M Module",
-            "Hanwha Q CELLS Q.PLUS BFR-G4.1 280 Module",
-            "Hanwha Q CELLS Q.Peak-G4.1 300 Module",
-            "Panasonic VBHN325SA 16 Module",
-            "LG LG320N1K-A5 Module",
-            "Mission Solar MSE300SQ5T Module",
-            "itek Energy IT-360-SE72 Module",
-        ]
-    if params.step_2.module_type == "Sandia Module":
-        return [
-            "AstroPower APX-120",
-            "BP Solar SX160B",
-            "Kyocera Solar PV110",
-            "Mitsubishi PV - MF185UD4",
-            "Sanyo HIP - 200BE11",
-            "Sharp ND - L3E1U",
-            "Siemens Solar SP75(6V)",
-            "Suntech STP200S - 18 - ub - 1 Module",
-        ]
-    return []
-
-
 def _get_inverter_name_list(params: Munch, **kwargs):
     """Create list of options for the inverter name dependent on the type"""
-    if params.step_2.inverter_type == "CEC Inverter":
+    if params.step_2.system_type == "California Energy Commission":
         return [
             "ABB: MICRO-0.3 Inverter",
             "Outback Power Tech. Inverter",
             "Hanwa Q-Cells Inverter",
         ]
-    if params.step_2.inverter_type == "Sandia Inverter":
+    if params.step_2.system_type == "Sandia National Laboratories":
         return [
             "Generac Power Systems Inverter",
             "Delta Electronics Inverter",
@@ -85,27 +56,31 @@ class ConfiguratorParametrization(Parametrization):
     # Sandia explanation: (https://energy.sandia.gov/wp-content/gallery/uploads/
     #                                               Performance-Model-for-Grid-Connected-Photovoltaic-Inverters.pdf)
     # CEC explanation: (https://www.energy.ca.gov/sites/default/files/2020-06/2004-11-22_Sandia_Test_Protocol_ada.pdf)
-    step_2.inverter_type = OptionField(
-        "Inverter type",
-        options=["Sandia Inverter", "CEC Inverter"],
-        default="Sandia Inverter", flex=50,
-        autoselect_single_option=True
-    )
-    # add comment explaining that the same protocols from the two organisations are used for the modules
-    step_2.module_type = OptionField(
-        "Module type", options=["Sandia Module", "CEC Module"], default="Sandia Module", flex=50,
+    step_2.system_type = OptionField(
+        "System type",
+        options=["Sandia National Laboratories", "California Energy Commission"],
+        default="Sandia National Laboratories", flex=70,
         autoselect_single_option=True
     )
 
     step_2.inverter_name = OptionField(
-        "Inverter model", options=_get_inverter_name_list, default="AstroPower APX-120",
+        "Inverter model", options=_get_inverter_name_list, default="Generac Power Systems Inverter",
         flex=50, autoselect_single_option=True,
 
     )
 
     step_2.module_name = OptionField(
         "Module model",
-        options=_get_module_name_list,
+        options=[
+            "AstroPower APX-120",
+            "BP Solar SX160B",
+            "Kyocera Solar PV110",
+            "Mitsubishi PV - MF185UD4",
+            "Sanyo HIP - 200BE11",
+            "Sharp ND - L3E1U",
+            "Siemens Solar SP75(6V)",
+            "Suntech STP200S - 18 - ub - 1 Module",
+        ],
         flex=50, autoselect_single_option=True, default='AstroPower APX-120 [ 2001]'
     )
 

@@ -19,7 +19,7 @@ import pvlib
 
 
 def calculate_energy_generation(
-    latitude, longitude, inverter_type, module_type, inverter_name, module_name, area=2
+    latitude, longitude, inverter_type, inverter_name, module_name, area=2, module_type='sandiamod'
 ):
     """Calculates the yearly energy yield as a result of the coorinates"""
 
