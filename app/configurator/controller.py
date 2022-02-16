@@ -79,10 +79,7 @@ class Controller(ViktorController):
                 "name": "Sanyo HIP-200BE11 [2006 (E)]",
                 "price": 481.00,
             },
-            "Sharp ND - L3E1U": {
-                "name": "Sharp ND-L3E1U [2002 (E)]",
-                "price": 675.00
-            },
+            "Sharp ND - L3E1U": {"name": "Sharp ND-L3E1U [2002 (E)]", "price": 675.00},
             "Siemens Solar SP75(6V)": {
                 "name": "Siemens Solar SP75 (6V) [2003 (E)]",
                 "price": 50.00,
@@ -137,7 +134,7 @@ class Controller(ViktorController):
         number_of_modules = DataItem(
             label="Number of modules possible on surface",
             value=energy_generation[1],
-            number_of_decimals=0
+            number_of_decimals=0,
         )
         inverter_cost = DataItem(
             label="Cost of Inverter",
@@ -163,11 +160,13 @@ class Controller(ViktorController):
             number_of_decimals=2,
         )
 
-        data = DataGroup(energy_info, number_of_modules, inverter_cost, module_cost, total_cost)
+        data = DataGroup(
+            energy_info, number_of_modules, inverter_cost, module_cost, total_cost
+        )
 
         return DataResult(data)
 
-    @PlotlyView('Plot', duration_guess=10) #only visible on "Step 3"
+    @PlotlyView("Plot", duration_guess=10)  # only visible on "Step 3"
     def get_plotly_view(self, params, **kwargs):
         """Shows the plot of the energy yield with break-even point"""
 
@@ -197,10 +196,7 @@ class Controller(ViktorController):
                 "name": "Sanyo HIP-200BE11 [2006 (E)]",
                 "price": 481.00,
             },
-            "Sharp ND - L3E1U": {
-                "name": "Sharp ND-L3E1U [2002 (E)]",
-                "price": 675.00
-            },
+            "Sharp ND - L3E1U": {"name": "Sharp ND-L3E1U [2002 (E)]", "price": 675.00},
             "Siemens Solar SP75(6V)": {
                 "name": "Siemens Solar SP75 (6V) [2003 (E)]",
                 "price": 50.00,
@@ -248,12 +244,14 @@ class Controller(ViktorController):
 
         # get yearly yield data
         yield_df = energy_generation[2]
-        yield_df['val'] *= params.step_3.kwh_cost
+        yield_df["val"] *= params.step_3.kwh_cost
 
         # calculate break-even (total costs / kwh price)
-        break_even = (inverter_name_dict[params.step_2.inverter_name]["price"] +
-                      module_name_dict[params.step_2.module_name]["price"] *
-                      energy_generation[1])
+        break_even = (
+            inverter_name_dict[params.step_2.inverter_name]["price"]
+            + module_name_dict[params.step_2.module_name]["price"]
+            * energy_generation[1]
+        )
 
         # forecast the length of the entered forecast horizon
         yield_df_copy = yield_df.copy()
@@ -262,32 +260,47 @@ class Controller(ViktorController):
         for i in range(params.step_3.forecast_horizon):
             if i != 0:
                 new_year = yield_df_copy.copy()
-                new_year['dat'] = new_year['dat'].apply(lambda dt: dt.replace(year=current_year+i))
+                new_year["dat"] = new_year["dat"].apply(
+                    lambda dt: dt.replace(year=current_year + i)
+                )
                 yield_df = yield_df.append(new_year)
 
         # add a cumulative column
         yield_df["dat"] = yield_df["dat"].dt.strftime("%Y-%m-%d %H:%M")
-        yield_df['cumulative_yield'] = yield_df['val'].cumsum(axis=0)
+        yield_df["cumulative_yield"] = yield_df["val"].cumsum(axis=0)
 
         # prepare data for plotly
-        x_dat = yield_df['dat'].to_list()
-        y_dat = yield_df['cumulative_yield'].to_list()
+        x_dat = yield_df["dat"].to_list()
+        y_dat = yield_df["cumulative_yield"].to_list()
         z_dat = [break_even] * len(x_dat)
 
         if params.step_3.break_even_toggle is True:
             fig = {
-                "data": [{"type": "line", "x": x_dat, "y": y_dat, "name": 'Energy yield'},
-                         {"type": "line", "x": x_dat, "y": z_dat, "name": 'Break-even point'}],
-                "layout": {"title": {"text": "Energy generation over time"},
-                           "xaxis": {"title": {"text": "Forecast horizon"}},
-                           "yaxis": {"title": {"text": "Revenue produced by system [€]"}}}
+                "data": [
+                    {"type": "line", "x": x_dat, "y": y_dat, "name": "Energy yield"},
+                    {
+                        "type": "line",
+                        "x": x_dat,
+                        "y": z_dat,
+                        "name": "Break-even point",
+                    },
+                ],
+                "layout": {
+                    "title": {"text": "Energy generation over time"},
+                    "xaxis": {"title": {"text": "Forecast horizon"}},
+                    "yaxis": {"title": {"text": "Revenue produced by system [€]"}},
+                },
             }
         else:
             fig = {
-                "data": [{"type": "bar", "x": x_dat, "y": y_dat, 'name': 'Energy yield'}],
-                "layout": {"title": {"text": "Energy generation over time"},
-                           "xaxis": {"title": {"text": "Forecast horizon"}},
-                           "yaxis": {"title": {"text": "Revenue produced by system [€]"}}}
+                "data": [
+                    {"type": "bar", "x": x_dat, "y": y_dat, "name": "Energy yield"}
+                ],
+                "layout": {
+                    "title": {"text": "Energy generation over time"},
+                    "xaxis": {"title": {"text": "Forecast horizon"}},
+                    "yaxis": {"title": {"text": "Revenue produced by system [€]"}},
+                },
             }
 
         return PlotlyResult(fig)
