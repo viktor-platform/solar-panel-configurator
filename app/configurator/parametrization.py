@@ -22,6 +22,7 @@ from viktor.parametrization import (
     GeoPointField,
     Tab,
     OptionField,
+    ToggleButton
 )
 from munch import Munch
 
@@ -31,13 +32,13 @@ def _get_inverter_name_list(params: Munch, **kwargs):
         return [
             "ABB: MICRO-0.3 Inverter",
             "Outback Power Tech. Inverter",
-            "Hanwa Q-Cells Inverter",
+            "Hanwa Q-Cells Inverter", ##########
         ]
     if params.step_2.system_type == "Sandia National Laboratories":
         return [
             "Generac Power Systems Inverter",
             "Delta Electronics Inverter",
-            "Chint Power Systems Inverter",
+            "Chint Power Systems Inverter", #############
         ]
     return []
 
@@ -81,11 +82,12 @@ class ConfiguratorParametrization(Parametrization):
             "Siemens Solar SP75(6V)",
             "Suntech STP200S - 18 - ub - 1 Module",
         ],
-        flex=50, autoselect_single_option=True, default='AstroPower APX-120 [ 2001]'
+        flex=50, autoselect_single_option=True, default='AstroPower APX-120'
     )
 
     # Step 3 contains the calculation of the break-even point and visualisation thereof
     step_3 = Step('Step 3 Visualisation', views='get_plotly_view')
     step_3.forecast_horizon = NumberField('Enter the forecasting horizon', suffix='years', default=5, flex=80)
     step_3.kwh_cost = NumberField('Enter KWh price to calculate break-even', suffix='€/KWh', default=0.22, flex=80)
+    step_3.break_even_toggle = ToggleButton('Show break-even point', default=True)
 

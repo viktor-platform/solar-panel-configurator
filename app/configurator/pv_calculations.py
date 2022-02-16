@@ -122,6 +122,7 @@ def calculate_energy_generation(
     yield_per_module = ac_yield_per_module.to_frame()
     yield_per_module["utc_time"] = pd.to_datetime(yield_per_module.index)
     yield_per_module.columns = ['val', 'dat']
+    yield_per_module.val *= 0.001
 
     # prepare data for presentation and visualisation
     acdf = ac_yield.to_frame()
@@ -140,6 +141,5 @@ def calculate_energy_generation(
 
     # final result in KWh*hrs
     energy_yield_per_module = int(annual_energy)
-    energy_yield = energy_yield_per_module
 
-    return energy_yield, nr_modules, acdf
+    return energy_yield_per_module, nr_modules, acdf

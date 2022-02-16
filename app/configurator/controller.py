@@ -51,7 +51,7 @@ class Controller(ViktorController):
 
         return MapResult(features)
 
-    @DataView("Data", duration_guess=10)  # only visible on "Step 2"
+    @DataView("Data", duration_guess=1)  # only visible on "Step 2"
     def get_data_view(self, params, **kwargs):
         """Creates dataview for step 2 from the pv_calculation"""
         type_dict = {
@@ -96,7 +96,7 @@ class Controller(ViktorController):
                 "price": 3791.88,
             },
             "Hanwa Q-Cells Inverter": {
-                "name": "Hanwha Q CELLS America Inc : Q.HOME+ HYB-G1-7.6 [240V]",
+                "name": " Hanwha Q CELLS America Inc : Q.HOME+ AC-G1-8.6 [240V]",
                 "price": 999.99,
             },
             "Generac Power Systems Inverter": {                 # Second three Sandia Inverters
@@ -108,7 +108,7 @@ class Controller(ViktorController):
                 "price": 999.99,
             },
             "Chint Power Systems Inverter": {
-                "name": " Chint Power Systems America: CPS ECB30KTL-O/US [480V]",
+                "name": "Chint Power Systems America: CPS SCA5KTL-O US [240V]",
                 "price": 999.99,
             },
         }
@@ -123,20 +123,25 @@ class Controller(ViktorController):
         )
 
         energy_info = DataItem(
-            label="Yearly energy yield",
+            label="Yearly energy yield per module",
             value=energy_generation[0],
             suffix="Kwh/year",
-            number_of_decimals=3,
+            number_of_decimals=2,
+        )
+        number_of_modules = DataItem(
+            label="Number of modules possible on surface",
+            value=energy_generation[1],
+            number_of_decimals=0
         )
         inverter_cost = DataItem(
-            label="Inverter cost",
+            label="Cost of Inverter",
             value=inverter_name_dict[params.step_2.inverter_name]["price"],
             prefix="€",
             suffix=",-",
             number_of_decimals=2,
         )
         module_cost = DataItem(
-            label="Module costs",
+            label="Cost per Module",
             value=module_name_dict[params.step_2.module_name]["price"],
             prefix="€",
             suffix=",-",
@@ -152,7 +157,7 @@ class Controller(ViktorController):
             number_of_decimals=2,
         )
 
-        data = DataGroup(energy_info, inverter_cost, module_cost, total_cost)
+        data = DataGroup(energy_info, number_of_modules, inverter_cost, module_cost, total_cost)
 
         return DataResult(data)
 
@@ -203,7 +208,7 @@ class Controller(ViktorController):
                 "price": 3791.88,
             },
             "Hanwa Q-Cells Inverter": {
-                "name": "Hanwha Q CELLS America Inc : Q.HOME+ HYB-G1-7.6 [240V]",
+                "name": " Hanwha Q CELLS America Inc : Q.HOME+ AC-G1-8.6 [240V]",
                 "price": 999.99,
             },
             "Generac Power Systems Inverter": {  # Second three Sandia Inverters
@@ -215,7 +220,7 @@ class Controller(ViktorController):
                 "price": 999.99,
             },
             "Chint Power Systems Inverter": {
-                "name": " Chint Power Systems America: CPS ECB30KTL-O/US [480V]",
+                "name": "Chint Power Systems America: CPS SCA5KTL-O US [240V]",
                 "price": 999.99,
             },
         }
@@ -231,11 +236,12 @@ class Controller(ViktorController):
 
         # get yearly yield data
         yield_df = energy_generation[2]
+        yield_df['val'] *= params.step_3.kwh_cost
 
         # calculate break-even (total costs / kwh price)
         break_even = (inverter_name_dict[params.step_2.inverter_name]["price"] +
                       module_name_dict[params.step_2.module_name]["price"] *
-                      energy_generation[1]) / params.step_3.kwh_cost
+                      energy_generation[1])
 
         # forecast the length of the entered forecast horizon
         yield_df_copy = yield_df.copy()
@@ -256,9 +262,20 @@ class Controller(ViktorController):
         y_dat = yield_df['cumulative_yield'].to_list()
         z_dat = [break_even] * len(x_dat)
 
-        fig = {
-            "data": [{"type": "bar", "x": x_dat, "y": y_dat}, {"type": "line", "x": x_dat, "y": z_dat}],
-            "layout": {"title": {"text": "Energy generation over time"}}
-        }
+        if params.step_3.break_even_toggle == True:
+            fig = {
+                "data": [{"type": "line", "x": x_dat, "y": y_dat, "name": 'Energy yield'},
+                         {"type": "line", "x": x_dat, "y": z_dat, "name": 'Break-even point'}],
+                "layout": {"title": {"text": "Energy generation over time"},
+                           "xaxis": {"title": {"text": "Forecast horizon"}},
+                           "yaxis": {"title": {"text": "Revenue produced by system [€]"}}}
+            }
+        else:
+            fig = {
+                "data": [{"type": "bar", "x": x_dat, "y": y_dat, 'name': 'Energy yield'}],
+                "layout": {"title": {"text": "Energy generation over time"},
+                           "xaxis": {"title": {"text": "Forecast horizon"}},
+                           "yaxis": {"title": {"text": "Revenue produced by system [€]"}}}
+            }
 
         return PlotlyResult(fig)
