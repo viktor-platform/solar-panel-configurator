@@ -14,6 +14,8 @@ SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import datetime
+
 from viktor.core import ViktorController
 from viktor.views import DataResult
 from viktor.views import DataView
@@ -26,8 +28,6 @@ from viktor.views import PlotlyView
 from viktor.views import PlotlyResult
 
 from munch import Munch
-import pandas as pd
-import datetime
 from .parametrization import ConfiguratorParametrization
 from .pv_calculations import calculate_energy_generation
 
@@ -274,7 +274,7 @@ class Controller(ViktorController):
         y_dat = yield_df['cumulative_yield'].to_list()
         z_dat = [break_even] * len(x_dat)
 
-        if params.step_3.break_even_toggle == True:
+        if params.step_3.break_even_toggle is True:
             fig = {
                 "data": [{"type": "line", "x": x_dat, "y": y_dat, "name": 'Energy yield'},
                          {"type": "line", "x": x_dat, "y": z_dat, "name": 'Break-even point'}],
