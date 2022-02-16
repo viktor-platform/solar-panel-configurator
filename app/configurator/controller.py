@@ -234,12 +234,12 @@ class Controller(ViktorController):
         }
 
         energy_generation = calculate_energy_generation(
-            params.step_1.location.point.lat,
-            params.step_1.location.point.lon,
+            params.step_1.point.lat,
+            params.step_1.point.lon,
             type_dict[params.step_2.system_type],
             inverter_name_dict[params.step_2.inverter_name]["name"],
             module_name_dict[params.step_2.module_name]["name"],
-            area=params.step_1.location.surface,
+            area=params.step_1.surface,
         )
 
         # get yearly yield data
@@ -257,12 +257,15 @@ class Controller(ViktorController):
         yield_df_copy = yield_df.copy()
 
         current_year = datetime.date.today().year
+
+        def replace_year(frame, increment):
+            frame = frame.apply(lambda dt: dt.replace(year=current_year + increment))
+            return frame
+
         for i in range(params.step_3.forecast_horizon):
             if i != 0:
                 new_year = yield_df_copy.copy()
-                new_year["dat"] = new_year["dat"].apply(
-                    lambda dt: dt.replace(year=current_year + i)
-                )
+                new_year["dat"] = replace_year(new_year["dat"], i)
                 yield_df = yield_df.append(new_year)
 
         # add a cumulative column
