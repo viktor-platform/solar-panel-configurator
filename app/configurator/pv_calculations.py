@@ -22,10 +22,7 @@ def calculate_energy_generation(latitude, longitude):
     """Calculates the yearly energy yield as a result of the coorinates"""
     name = "Your"
 
-    # determine the altitude based on coordinates
-    altitude = 0  # [m]
-
-    # get the module and inverter specifications (type and name) from SAM
+    # get the module and inverter specifications from SAM
     sandia_modules = pvlib.pvsystem.retrieve_sam("SandiaMod")
     sapm_inverters = pvlib.pvsystem.retrieve_sam("cecinverter")
     module = sandia_modules["Canadian_Solar_CS5P_220M___2009_"]
@@ -38,10 +35,17 @@ def calculate_energy_generation(latitude, longitude):
 
     # retreive weather data
     weather = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)[0]
+    # retreive weather data and elevation (altitude)
+
+    weather, _, inputs, _ = pvlib.iotools.get_pvgis_tmy(
+        latitude, longitude, map_variables=True
+    )
     weather.index.name = "utc_time"
     temp_air = weather["temp_air"]  # [degrees_C]
     wind_speed = weather["wind_speed"]  # [m/s]
     pressure = weather["pressure"]  # [Pa]
+
+    altitude = inputs["location"]["elevation"]
 
     # declare system
     system = {"module": module, "inverter": inverter, "surface_azimuth": 180}
