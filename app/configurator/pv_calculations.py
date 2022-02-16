@@ -16,6 +16,7 @@ SOFTWARE.
 """
 import pandas as pd
 import pvlib
+import datetime
 
 
 def calculate_energy_generation(
@@ -115,20 +116,26 @@ def calculate_energy_generation(
     )
     dc_yield = pvlib.pvsystem.sapm(effective_irradiance, tcell, module)
     ac_yield = pvlib.inverter.sandia(dc_yield["v_mp"] * nr_modules, dc_yield["p_mp"] * nr_modules, inverter)
+    ac_yield_per_module = pvlib.inverter.sandia(dc_yield["v_mp"], dc_yield["p_mp"], inverter)
 
+    # output for the energy per module
+    yield_per_module = ac_yield_per_module.to_frame()
+    yield_per_module["utc_time"] = pd.to_datetime(yield_per_module.index)
+    yield_per_module.columns = ['val', 'dat']
 
     # prepare data for presentation and visualisation
     acdf = ac_yield.to_frame()
     acdf["utc_time"] = pd.to_datetime(acdf.index)
-    acdf["utc_time"] = acdf.index.strftime("%m-%d %H:%M:%S")
+    acdf['utc_time'] = acdf['utc_time'].apply(lambda dt: dt.replace(year=datetime.date.today().year))
+
     acdf.columns = ["val", "dat"]
+
     acdf.val *= 0.001
-    acdf['cumulative_yield'] = acdf['val'].cumsum(axis=0)
     acdf.fillna(0, inplace=True)
 
     # possible plot
     acdf.plot(x="dat", y="val")
-    annual_energy = acdf["val"].sum()
+    annual_energy = yield_per_module["val"].sum()
     # plt.show()
 
     # final result in KWh*hrs

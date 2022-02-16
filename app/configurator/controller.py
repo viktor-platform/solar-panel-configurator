@@ -26,6 +26,8 @@ from viktor.views import PlotlyView
 from viktor.views import PlotlyResult
 
 from munch import Munch
+import pandas as pd
+import datetime
 from .parametrization import ConfiguratorParametrization
 from .pv_calculations import calculate_energy_generation
 
@@ -49,7 +51,7 @@ class Controller(ViktorController):
 
         return MapResult(features)
 
-    @DataView("Data", duration_guess=1)  # only visible on "Step 2"
+    @DataView("Data", duration_guess=10)  # only visible on "Step 2"
     def get_data_view(self, params, **kwargs):
         """Creates dataview for step 2 from the pv_calculation"""
         type_dict = {
@@ -84,7 +86,6 @@ class Controller(ViktorController):
                 "price": 480.00,
             },
         }
-
         inverter_name_dict = {
             "ABB: MICRO-0.3 Inverter": {                        # First three CEC Inverters
                 "name": "ABB: MICRO-0.3-I-OUTD-US-240 [240V]",
@@ -155,7 +156,7 @@ class Controller(ViktorController):
 
         return DataResult(data)
 
-    @PlotlyView('Plot', duration_guess=1) #only visible on "Step 3"
+    @PlotlyView('Plot', duration_guess=10) #only visible on "Step 3"
     def get_plotly_view(self, params, **kwargs):
         """Shows the plot of the energy yield with break-even point"""
 
@@ -228,11 +229,29 @@ class Controller(ViktorController):
             area=params.step_1.location.surface,
         )
 
+        # get yearly yield data
         yield_df = energy_generation[2]
+
+        # calculate break-even (total costs / kwh price)
         break_even = (inverter_name_dict[params.step_2.inverter_name]["price"] +
                       module_name_dict[params.step_2.module_name]["price"] *
                       energy_generation[1]) / params.step_3.kwh_cost
 
+        # forecast the length of the entered forecast horizon
+        yield_df_copy = yield_df.copy()
+
+        current_year = datetime.date.today().year
+        for i in range(params.step_3.forecast_horizon):
+            if i != 0:
+                new_year = yield_df_copy.copy()
+                new_year['dat'] = new_year['dat'].apply(lambda dt: dt.replace(year=current_year+i))
+                yield_df = yield_df.append(new_year)
+
+        # add a cumulative column
+        yield_df["dat"] = yield_df["dat"].dt.strftime("%Y-%m-%d %H:%M")
+        yield_df['cumulative_yield'] = yield_df['val'].cumsum(axis=0)
+
+        # prepare data for plotly
         x_dat = yield_df['dat'].to_list()
         y_dat = yield_df['cumulative_yield'].to_list()
         z_dat = [break_even] * len(x_dat)

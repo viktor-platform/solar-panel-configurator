@@ -86,4 +86,6 @@ class ConfiguratorParametrization(Parametrization):
 
     # Step 3 contains the calculation of the break-even point and visualisation thereof
     step_3 = Step('Step 3 Visualisation', views='get_plotly_view')
+    step_3.forecast_horizon = NumberField('Enter the forecasting horizon', suffix='years', default=5, flex=80)
     step_3.kwh_cost = NumberField('Enter KWh price to calculate break-even', suffix='€/KWh', default=0.22, flex=80)
+
