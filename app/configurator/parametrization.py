@@ -49,7 +49,7 @@ class ConfiguratorParametrization(Parametrization):
     step_1 = Step("Step 1 Home", views="get_map_view")  # no views
     step_1.location = Tab("Location")
     step_1.location.point = GeoPointField("enter a point")
-    step_1.location.surface = NumberField("Surface area", suffix="m2", default=0)
+    step_1.location.surface = NumberField("Surface area", suffix="m2", default=0, min=0)
 
     step_2 = Step("Step 2 System", views="get_data_view")
     # add comment which explains that Sandia and CEC are
@@ -87,7 +87,9 @@ class ConfiguratorParametrization(Parametrization):
 
     # Step 3 contains the calculation of the break-even point and visualisation thereof
     step_3 = Step('Step 3 Visualisation', views='get_plotly_view')
-    step_3.forecast_horizon = NumberField('Enter the forecasting horizon', suffix='years', default=5, flex=80)
-    step_3.kwh_cost = NumberField('Enter KWh price to calculate break-even', suffix='€/KWh', default=0.22, flex=80)
+    step_3.forecast_horizon = NumberField('Enter the forecasting horizon',
+                                          suffix='years', default=5, flex=80, min=1)
+    step_3.kwh_cost = NumberField('Enter KWh price to calculate break-even',
+                                  suffix='€/KWh', default=0.22, flex=80, min=0)
     step_3.break_even_toggle = ToggleButton('Show break-even point', default=True)
 

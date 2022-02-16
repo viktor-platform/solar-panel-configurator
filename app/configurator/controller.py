@@ -61,12 +61,15 @@ class Controller(ViktorController):
         module_name_dict = {
             "AstroPower APX-120": {
                 "name": "AstroPower APX-120 [ 2001]",
-                "price": 132.32,
+                "price": 240.27,
             },
-            "BP Solar SX160B": {"name": "BP Solar SX160B [2005 (E)]", "price": 132.32},
+            "BP Solar SX160B": {
+                "name": "BP Solar SX160B [2005 (E)]",
+                "price": 395.45,
+            },
             "Kyocera Solar PV110": {
                 "name": "Kyocera Solar PV110 [2003 (E)]",
-                "price": 132.32,
+                "price": 242.68,
             },
             "Mitsubishi PV - MF185UD4": {
                 "name": "Mitsubishi PV-MF185UD4 [2006 (E)]",
@@ -74,9 +77,12 @@ class Controller(ViktorController):
             },
             "Sanyo HIP - 200BE11": {
                 "name": "Sanyo HIP-200BE11 [2006 (E)]",
-                "price": 132.32,
+                "price": 481.00,
             },
-            "Sharp ND - L3E1U": {"name": "Sharp ND-L3E1U [2002 (E)]", "price": 675.00},
+            "Sharp ND - L3E1U": {
+                "name": "Sharp ND-L3E1U [2002 (E)]",
+                "price": 675.00
+            },
             "Siemens Solar SP75(6V)": {
                 "name": "Siemens Solar SP75 (6V) [2003 (E)]",
                 "price": 50.00,
@@ -87,7 +93,7 @@ class Controller(ViktorController):
             },
         }
         inverter_name_dict = {
-            "ABB: MICRO-0.3 Inverter": {                        # First three CEC Inverters
+            "ABB: MICRO-0.3 Inverter": {  # First three CEC Inverters
                 "name": "ABB: MICRO-0.3-I-OUTD-US-240 [240V]",
                 "price": 173.19,
             },
@@ -97,19 +103,19 @@ class Controller(ViktorController):
             },
             "Hanwa Q-Cells Inverter": {
                 "name": " Hanwha Q CELLS America Inc : Q.HOME+ AC-G1-8.6 [240V]",
-                "price": 999.99,
+                "price": 1877.47,
             },
-            "Generac Power Systems Inverter": {                 # Second three Sandia Inverters
+            "Generac Power Systems Inverter": {  # Second three Sandia Inverters
                 "name": " Generac Power Systems: XVT076A03 [240V]",
                 "price": 3431.35,
             },
             "Delta Electronics Inverter": {
                 "name": " Delta Electronics: E4-TL-US(AC) [240V]",
-                "price": 999.99,
+                "price": 3405.86,
             },
             "Chint Power Systems Inverter": {
                 "name": "Chint Power Systems America: CPS SCA5KTL-O US [240V]",
-                "price": 999.99,
+                "price": 1616.45,
             },
         }
 
@@ -173,12 +179,15 @@ class Controller(ViktorController):
         module_name_dict = {
             "AstroPower APX-120": {
                 "name": "AstroPower APX-120 [ 2001]",
-                "price": 132.32,
+                "price": 240.27,
             },
-            "BP Solar SX160B": {"name": "BP Solar SX160B [2005 (E)]", "price": 132.32},
+            "BP Solar SX160B": {
+                "name": "BP Solar SX160B [2005 (E)]",
+                "price": 395.45,
+            },
             "Kyocera Solar PV110": {
                 "name": "Kyocera Solar PV110 [2003 (E)]",
-                "price": 132.32,
+                "price": 242.68,
             },
             "Mitsubishi PV - MF185UD4": {
                 "name": "Mitsubishi PV-MF185UD4 [2006 (E)]",
@@ -186,9 +195,12 @@ class Controller(ViktorController):
             },
             "Sanyo HIP - 200BE11": {
                 "name": "Sanyo HIP-200BE11 [2006 (E)]",
-                "price": 132.32,
+                "price": 481.00,
             },
-            "Sharp ND - L3E1U": {"name": "Sharp ND-L3E1U [2002 (E)]", "price": 675.00},
+            "Sharp ND - L3E1U": {
+                "name": "Sharp ND-L3E1U [2002 (E)]",
+                "price": 675.00
+            },
             "Siemens Solar SP75(6V)": {
                 "name": "Siemens Solar SP75 (6V) [2003 (E)]",
                 "price": 50.00,
@@ -209,7 +221,7 @@ class Controller(ViktorController):
             },
             "Hanwa Q-Cells Inverter": {
                 "name": " Hanwha Q CELLS America Inc : Q.HOME+ AC-G1-8.6 [240V]",
-                "price": 999.99,
+                "price": 1877.47,
             },
             "Generac Power Systems Inverter": {  # Second three Sandia Inverters
                 "name": " Generac Power Systems: XVT076A03 [240V]",
@@ -217,11 +229,11 @@ class Controller(ViktorController):
             },
             "Delta Electronics Inverter": {
                 "name": " Delta Electronics: E4-TL-US(AC) [240V]",
-                "price": 999.99,
+                "price": 3405.86,
             },
             "Chint Power Systems Inverter": {
                 "name": "Chint Power Systems America: CPS SCA5KTL-O US [240V]",
-                "price": 999.99,
+                "price": 1616.45,
             },
         }
 
