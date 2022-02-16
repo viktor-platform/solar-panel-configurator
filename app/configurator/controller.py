@@ -45,8 +45,8 @@ class Controller(ViktorController):
         """Creates mapview for step 1"""
         features = []
 
-        if params.step_1.location.point:
-            marker = params.step_1.location.point
+        if params.step_1.point:
+            marker = params.step_1.point
             features.append(MapPoint.from_geo_point(marker))
 
         return MapResult(features)
@@ -120,12 +120,12 @@ class Controller(ViktorController):
         }
 
         energy_generation = calculate_energy_generation(
-            params.step_1.location.point.lat,
-            params.step_1.location.point.lon,
+            params.step_1.point.lat,
+            params.step_1.point.lon,
             type_dict[params.step_2.system_type],
             inverter_name_dict[params.step_2.inverter_name]["name"],
             module_name_dict[params.step_2.module_name]["name"],
-            area=params.step_1.location.surface,
+            area=params.step_1.surface,
         )
 
         energy_info = DataItem(

@@ -18,11 +18,12 @@ SOFTWARE.
 from viktor.parametrization import (
     Parametrization,
     Step,
+    Section,
     NumberField,
     GeoPointField,
-    Tab,
     OptionField,
-    ToggleButton
+    ToggleButton,
+    Text
 )
 from munch import Munch
 
@@ -32,13 +33,13 @@ def _get_inverter_name_list(params: Munch, **kwargs):
         return [
             "ABB: MICRO-0.3 Inverter",
             "Outback Power Tech. Inverter",
-            "Hanwa Q-Cells Inverter", ##########
+            "Hanwa Q-Cells Inverter",
         ]
     if params.step_2.system_type == "Sandia National Laboratories":
         return [
             "Generac Power Systems Inverter",
             "Delta Electronics Inverter",
-            "Chint Power Systems Inverter", #############
+            "Chint Power Systems Inverter",
         ]
     return []
 
@@ -46,12 +47,39 @@ def _get_inverter_name_list(params: Munch, **kwargs):
 class ConfiguratorParametrization(Parametrization):
     """Defines the input fields for the mapview (step 1) and dataview (step 2)"""
 
-    step_1 = Step("Step 1 Home", views="get_map_view")  # no views
-    step_1.location = Tab("Location")
-    step_1.location.point = GeoPointField("enter a point")
-    step_1.location.surface = NumberField("Surface area", suffix="m2", default=0, min=0)
+    step_1 = Step("Step 1 Define location of your home", views="get_map_view")
 
-    step_2 = Step("Step 2 System", views="get_data_view")
+    step_1.text = Text(
+        '''## Location definition
+        \n Different locations around the globe interact with the sun differently.
+        \n Moreover the different climates produce specific weather patterns.
+        \n By choosing the location of your home on the map on the right, weather data for a
+        *Typical Meteorological Year* (TMY) at your location will be gathered from the
+        [EU Science Hub](https://ec.europa.eu/jrc/en/pvgis). This TMY is used in the calculation of energy yield 
+        by your system.''')
+    step_1.text2 = Text('''## Choose location''')
+    step_1.point = GeoPointField("enter a point")
+    step_1.text3 = Text('''Define the surface area available on the roof:''')
+    step_1.surface = NumberField("Surface area", suffix="m2", default=0, min=0)
+
+    step_2 = Step("Step 2 Choose your system configuration", views="get_data_view")
+
+    step_2.text = Text(
+        '''## PV-System explanation  
+        \n A consumer-home PV-system always consist of  
+        \n - One inverter unit  
+        \n - One or more modules  
+        \n The PV-systems included here are all approved by either the 
+        [Sandia National Laboratory](https://tinyurl.com/4jf5nkpy) or the 
+        [California Energy Commission](https://tinyurl.com/2p87uwkj), both of which use different calculations 
+        for their approval protocols.''')
+    step_2.text2 = Text(
+        '''## Choose PV-System configuration
+        \n By choosing either institution as the *System type* one is able to choose different 
+        configurations of inverters and modules.
+        \n All up-to-date secifications of the chosen system configuration are
+        provided by the *System Advisor Model* (SAM) as developed by the 
+        [National Renewable Energy Laboratory](https://sam.nrel.gov/).''')
     # add comment which explains that Sandia and CEC are
     # two approval protocols for calculating the inverter's output power
     # Sandia explanation: (https://energy.sandia.gov/wp-content/gallery/uploads/
@@ -86,10 +114,31 @@ class ConfiguratorParametrization(Parametrization):
     )
 
     # Step 3 contains the calculation of the break-even point and visualisation thereof
-    step_3 = Step('Step 3 Visualisation', views='get_plotly_view')
+    step_3 = Step('Step 3 Visualise your return-on-investment', views='get_plotly_view')
+    step_3.text = Text(
+        '''## Forecast and Break-even
+        \n Here you are able to forecast the energy yield of your chosen system. Based on the **KWh price** indicated
+        The forecast will automatically calculate the revenue produced by your system.
+        \n The break-even point is also indicated, this is the moment in time where the investment will be fully
+        compensated by the revenue produced.'''
+    )
     step_3.forecast_horizon = NumberField('Enter the forecasting horizon',
-                                          suffix='years', default=5, flex=80, min=1)
+                                          suffix='years', default=5, flex=80, min=1,
+                                          description="Amount of years starting at"
+                                          "  \n the beginning of this year"
+                                          "  \n (enter only whole years)")
     step_3.kwh_cost = NumberField('Enter KWh price to calculate break-even',
-                                  suffix='€/KWh', default=0.22, flex=80, min=0)
+                                  suffix='€/KWh', default=0.22, flex=80, min=0,
+                                  description="KWh price which is applicable to you."
+                                              "  \n Prices may differ between energy providers."
+                                              " \n"
+                                              "  \n Note that prices for KWh supplied **to** the grid often"
+                                              " differ from those of KWh\'s **taken from** the grid")
+    step_3.text2 = Text(
+        '''If you are only interested in a detailed time period you could choose to not show the break-even point
+        in the graph and choose for a short forecasting horizon.  
+        \n Alternatively you could use the viewing-tools in the top-right corner of the graph to zoom to a specific 
+        point.'''
+    )
     step_3.break_even_toggle = ToggleButton('Show break-even point', default=True)
 
