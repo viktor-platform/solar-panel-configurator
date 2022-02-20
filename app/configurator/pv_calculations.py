@@ -68,14 +68,14 @@ def calculate_energy_generation(
     ]["open_rack_glass_glass"]
 
     # retreive weather data and elevation (altitude)
-    weather, *inputs = pvlib.iotools.get_pvgis_tmy(
+    weather, _, inputs, _ = pvlib.iotools.get_pvgis_tmy(
         latitude, longitude, map_variables=True
     )
     weather.index.name = "utc_time"
     temp_air = weather["temp_air"]  # [degrees_C]
     wind_speed = weather["wind_speed"]  # [m/s]
     pressure = weather["pressure"]  # [Pa]
-    altitude = inputs[1]["location"]["elevation"]  # [m]
+    altitude = inputs["location"]["elevation"]  # [m]
 
     # declare system
     system = {"module": module, "inverter": inverter, "surface_azimuth": 180}

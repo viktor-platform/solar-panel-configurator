@@ -141,11 +141,10 @@ class Controller(ViktorController):
             frame = frame.apply(lambda dt: dt.replace(year=current_year + increment))
             return frame
 
-        for i in range(params.step_3.forecast_horizon):
-            if i != 0:
-                new_year = yield_df_copy.copy()
-                new_year["dat"] = replace_year(new_year["dat"], i)
-                yield_df = yield_df.append(new_year)
+        for i in range(1, params.step_3.forecast_horizon):
+            new_year = yield_df_copy.copy()
+            new_year["dat"] = replace_year(new_year["dat"], i)
+            yield_df = yield_df.append(new_year)
 
         # add a cumulative column
         yield_df["dat"] = yield_df["dat"].dt.strftime("%Y-%m-%d %H:%M")

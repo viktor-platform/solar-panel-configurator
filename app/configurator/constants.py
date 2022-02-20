@@ -1,3 +1,5 @@
+'''Dictionaries describing module and inverter information are stored here'''
+
 type_dict = {
             "California Energy Commission": "cecinverter",
             "Sandia National Laboratories": "sandiainverter",
