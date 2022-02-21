@@ -19,6 +19,16 @@ import pvlib
 import pandas as pd
 
 
+def translate_names(entry):
+    """Translates module and inverter names to suit with the SAM databases"""
+    bad_chars = ' -.()[]:+/",'
+    good_chars = "____________"
+    trans_dict = entry.maketrans(bad_chars, good_chars)
+    translated_entry = entry.translate(trans_dict)
+
+    return translated_entry
+
+
 def calculate_energy_generation(
     latitude,
     longitude,
@@ -29,15 +39,6 @@ def calculate_energy_generation(
     module_type="sandiamod",
 ):
     """Calculates the yearly energy yield as a result of the coorinates"""
-
-    def translate_names(entry):
-        """Translates module and inverter names to suit with the SAM databases"""
-        bad_chars = ' -.()[]:+/",'
-        good_chars = "____________"
-        trans_dict = entry.maketrans(bad_chars, good_chars)
-        translated_entry = entry.translate(trans_dict)
-
-        return translated_entry
 
     # get the module and inverter databases from SAM
     url_dict = {

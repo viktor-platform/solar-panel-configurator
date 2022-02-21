@@ -83,11 +83,7 @@ class ConfiguratorParametrization(Parametrization):
         provided by the *System Advisor Model* (SAM) as developed by the
         [National Renewable Energy Laboratory](https://sam.nrel.gov/)."""
     )
-    # add comment which explains that Sandia and CEC are
-    # two approval protocols for calculating the inverter's output power
-    # Sandia explanation: (https://energy.sandia.gov/wp-content/gallery/uploads/
-    #                                               Performance-Model-for-Grid-Connected-Photovoltaic-Inverters.pdf)
-    # CEC explanation: (https://www.energy.ca.gov/sites/default/files/2020-06/2004-11-22_Sandia_Test_Protocol_ada.pdf)
+
     step_2.system_type = OptionField(
         "System type",
         options=["Sandia National Laboratories", "California Energy Commission"],

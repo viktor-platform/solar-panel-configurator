@@ -58,14 +58,7 @@ class Controller(ViktorController):
     def get_data_view(self, params, **kwargs):
         """Creates dataview for step 2 from the pv_calculation"""
 
-        energy_generation = calculate_energy_generation(
-            params.step_1.point.lat,
-            params.step_1.point.lon,
-            type_dict[params.step_2.system_type],
-            inverter_name_dict[params.step_2.inverter_name]["name"],
-            module_name_dict[params.step_2.module_name]["name"],
-            area=params.step_1.surface,
-        )
+        energy_generation = self.get_energy_generation(params)
 
         energy_info = DataItem(
             label="Yearly energy yield per module",
@@ -95,8 +88,8 @@ class Controller(ViktorController):
         total_cost = DataItem(
             label="Total system cost",
             value=inverter_name_dict[params.step_2.inverter_name]["price"]
-            + module_name_dict[params.step_2.module_name]["price"]
-            * energy_generation[1],
+                  + module_name_dict[params.step_2.module_name]["price"]
+                  * energy_generation[1],
             prefix="€",
             suffix=",-",
             number_of_decimals=2,
@@ -112,14 +105,7 @@ class Controller(ViktorController):
     def get_plotly_view(self, params, **kwargs):
         """Shows the plot of the energy yield with break-even point"""
 
-        energy_generation = calculate_energy_generation(
-            params.step_1.point.lat,
-            params.step_1.point.lon,
-            type_dict[params.step_2.system_type],
-            inverter_name_dict[params.step_2.inverter_name]["name"],
-            module_name_dict[params.step_2.module_name]["name"],
-            area=params.step_1.surface,
-        )
+        energy_generation = self.get_energy_generation(params)
 
         # get yearly yield data
         yield_df = energy_generation[2]
@@ -127,34 +113,28 @@ class Controller(ViktorController):
 
         # calculate break-even (total costs / kwh price)
         break_even = (
-            inverter_name_dict[params.step_2.inverter_name]["price"]
-            + module_name_dict[params.step_2.module_name]["price"]
-            * energy_generation[1]
+                inverter_name_dict[params.step_2.inverter_name]["price"]
+                + module_name_dict[params.step_2.module_name]["price"]
+                * energy_generation[1]
         )
 
         # forecast the length of the entered forecast horizon
         yield_df_copy = yield_df.copy()
 
-        current_year = datetime.date.today().year
-
-        def replace_year(frame, increment):
-            frame = frame.apply(lambda dt: dt.replace(year=current_year + increment))
-            return frame
-
         for i in range(1, params.step_3.forecast_horizon):
             new_year = yield_df_copy.copy()
-            new_year["dat"] = replace_year(new_year["dat"], i)
+            new_year["dat"] = self.replace_year(new_year["dat"], i)
             yield_df = yield_df.append(new_year)
 
-        # add a cumulative column
         yield_df["dat"] = yield_df["dat"].dt.strftime("%Y-%m-%d %H:%M")
+
+        # add a cumulative column
         yield_df["cumulative_yield"] = yield_df["val"].cumsum(axis=0)
+        x_dat = yield_df["dat"].to_list()
 
         # prepare data for plotly
-        x_dat = yield_df["dat"].to_list()
         y_dat = yield_df["cumulative_yield"].to_list()
         z_dat = [break_even] * len(x_dat)
-
         if params.step_3.break_even_toggle is True:
             fig = {
                 "data": [
@@ -185,3 +165,20 @@ class Controller(ViktorController):
             }
 
         return PlotlyResult(fig)
+    def get_energy_generation(self, params):
+        '''Generate energy yield data'''
+        return calculate_energy_generation(
+            params.step_1.point.lat,
+            params.step_1.point.lon,
+            type_dict[params.step_2.system_type],
+            inverter_name_dict[params.step_2.inverter_name]["name"],
+            module_name_dict[params.step_2.module_name]["name"],
+            area=params.step_1.surface,
+        )
+
+    @staticmethod
+    def replace_year(frame, increment):
+        '''Update year of the dates in yield dataframe'''
+        current_year = datetime.date.today().year
+        frame = frame.apply(lambda dt: dt.replace(year=current_year + increment))
+        return frame
