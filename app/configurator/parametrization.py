@@ -59,9 +59,11 @@ class ConfiguratorParametrization(Parametrization):
         system."""
     )
     step_1.text2 = Text("""## Choose location""")
-    step_1.point = GeoPointField("enter a point")
+    step_1.point = GeoPointField("enter a point", description='Click a location on the map to select it for calculation')
     step_1.text3 = Text("""Define the surface area available on the roof:""")
-    step_1.surface = NumberField("Surface area", suffix="m2", default=0, min=0)
+    step_1.surface = NumberField("Surface area", suffix="m2", default=0, min=0,
+                                 description='Use the arrows to select your available surface area or enter a number '
+                                             '  \n (if applicable use a decimal point **\' . \'** instead of a comma **\' , \'** )')
 
     step_2 = Step("Step 2 Choose your system configuration", views="get_data_view")
 
