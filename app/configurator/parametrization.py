@@ -15,6 +15,7 @@ SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from munch import Munch
 from viktor.parametrization import (
     Parametrization,
     Step,
@@ -24,14 +25,13 @@ from viktor.parametrization import (
     ToggleButton,
     Text,
 )
-from munch import Munch
 
 
 def _get_inverter_name_list(params: Munch, **kwargs):
     """Create list of options for the inverter name dependent on the type"""
     if params.step_2.system_type == "California Energy Commission":
         return [
-            "ABB: MICRO-0.3 Inverter",
+            "ABB: PVI-0.3 Inverter",
             "Outback Power Tech. Inverter",
             "Hanwa Q-Cells Inverter",
         ]
@@ -39,7 +39,7 @@ def _get_inverter_name_list(params: Munch, **kwargs):
         return [
             "Generac Power Systems Inverter",
             "Delta Electronics Inverter",
-            "Chint Power Systems Inverter",
+            "Enphase Energy Inc Inverter",
         ]
     return []
 
