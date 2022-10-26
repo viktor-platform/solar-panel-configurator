@@ -28,11 +28,11 @@ from viktor.views import PlotlyView
 from viktor.views import PlotlyResult
 
 from munch import Munch
-from .constants import type_dict
-from .constants import inverter_name_dict
-from .constants import module_name_dict
-from .parametrization import ConfiguratorParametrization
-from .pv_calculations import calculate_energy_generation
+from constants import type_dict
+from constants import inverter_name_dict
+from constants import module_name_dict
+from parametrization import ConfiguratorParametrization
+from pv_calculations import calculate_energy_generation
 
 
 class Controller(ViktorController):
