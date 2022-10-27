@@ -16,19 +16,17 @@ SOFTWARE.
 """
 import datetime
 
+from munch import Munch
 from viktor.core import ViktorController
+from viktor.views import DataGroup
+from viktor.views import DataItem
 from viktor.views import DataResult
 from viktor.views import DataView
-from viktor.views import DataItem
-from viktor.views import DataGroup
 from viktor.views import MapPoint
 from viktor.views import MapResult
 from viktor.views import MapView
-from viktor.views import PlotlyView
 from viktor.views import PlotlyResult
-
-from munch import Munch
-from constants import type_dict
+from viktor.views import PlotlyView
 from constants import inverter_name_dict
 from constants import module_name_dict
 from parametrization import ConfiguratorParametrization
@@ -55,7 +53,7 @@ class Controller(ViktorController):
         return MapResult(features)
 
     @DataView("Data", duration_guess=1)  # only visible on "Step 2"
-    def get_data_view(self, params, **kwargs):
+    def get_data_view(self, params: Munch, **kwargs):
         """Creates dataview for step 2 from the pv_calculation"""
 
         energy_generation = self.get_energy_generation(params)
@@ -102,7 +100,7 @@ class Controller(ViktorController):
         return DataResult(data)
 
     @PlotlyView("Plot", duration_guess=10)  # only visible on "Step 3"
-    def get_plotly_view(self, params, **kwargs):
+    def get_plotly_view(self, params: Munch, **kwargs):
         """Shows the plot of the energy yield with break-even point"""
 
         energy_generation = self.get_energy_generation(params)
@@ -135,7 +133,7 @@ class Controller(ViktorController):
         # prepare data for plotly
         y_dat = yield_df["cumulative_yield"].to_list()
         z_dat = [break_even] * len(x_dat)
-        if params.step_3.break_even_toggle is True:
+        if params.step_3.break_even_toggle:
             fig = {
                 "data": [
                     {"type": "line", "x": x_dat, "y": y_dat, "name": "Energy yield"},
@@ -165,20 +163,21 @@ class Controller(ViktorController):
             }
 
         return PlotlyResult(fig)
-    def get_energy_generation(self, params):
-        '''Generate energy yield data'''
+
+    @staticmethod
+    def get_energy_generation(params: Munch):
+        """Generate energy yield data"""
         return calculate_energy_generation(
-            params.step_1.point.lat,
-            params.step_1.point.lon,
-            type_dict[params.step_2.system_type],
-            inverter_name_dict[params.step_2.inverter_name]["name"],
-            module_name_dict[params.step_2.module_name]["name"],
+            latitude=params.step_1.point.lat,
+            longitude=params.step_1.point.lon,
+            inverter_name=inverter_name_dict[params.step_2.inverter_name]["name"],
+            module_name=module_name_dict[params.step_2.module_name]["name"],
             area=params.step_1.surface,
         )
 
     @staticmethod
     def replace_year(frame, increment):
-        '''Update year of the dates in yield dataframe'''
+        """Update year of the dates in yield dataframe"""
         current_year = datetime.date.today().year
         frame = frame.apply(lambda dt: dt.replace(year=current_year + increment))
         return frame

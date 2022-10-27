@@ -1,8 +1,8 @@
-'''Dictionaries describing module and inverter information are stored here'''
+"""Dictionaries describing module and inverter information are stored here"""
 
 type_dict = {
-            "California Energy Commission": "cecinverter",
-            "Sandia National Laboratories": "sandiainverter",
+            "California Energy Commission": "CECInverter",
+            "Sandia National Laboratories": "SandiaInverter",
         }
 module_name_dict = {
             "AstroPower APX-120": {
@@ -47,24 +47,20 @@ inverter_name_dict = {
                 "name": "OutBack Power Technologies - Inc : GS8048A [240V]",
                 "price": 3797.88,
             },
-            "Hanwa Q-Cells Inverter": {
-                "name": "Hanwha Q CELLS America Inc : Q.HOME+ AC-G1-8.6 [240V]",
+            "Huawei Technologies Inverter": {
+                "name": "Huawei_Technologies_Co___Ltd___SUN2000_10KTL_USL0__240V_",
                 "price": 1877.47,
             },
-            "Generac Power Systems Inverter": {  # Second three Sandia Inverters
-                "name": "Generac Power Systems: XVT076A03 [240V]",
+            "Gefran APV Inverter": {  # Second three Sandia Inverters
+                "name": "Gefran: APV 1700 2M TL US [208V]",
                 "price": 3431.35,
             },
             "Delta Electronics Inverter": {
-                "name": "Delta Electronics: E4-TL-US(AC) [240V]",
+                "name": "Delta Electronics: E6-TL-US(AC) [240V]",
                 "price": 2589.40,
             },
-            # "Chint Power Systems Inverter": {
-            #     "name": " Chint Power Systems America: CPS SCA5KTL-O US [240V]",
-            #     "price": 1616.45,
-            # },
             "Enphase Energy Inc Inverter": {
-                "name": "Enphase Energy Inc : IQ6-60-5-US [240V]",
+                "name": "Enphase Energy Inc : IQ6-60-x-US [240V]",
                 "price": 220.95,
             },
 
