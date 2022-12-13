@@ -15,32 +15,24 @@ SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from viktor.parametrization import (
-    Parametrization,
-    Step,
-    NumberField,
-    GeoPointField,
-    OptionField,
-    ToggleButton,
-    Text,
-)
+from constants import inverter_name_dict
 from munch import Munch
+from viktor.parametrization import GeoPointField
+from viktor.parametrization import NumberField
+from viktor.parametrization import OptionField
+from viktor.parametrization import Parametrization
+from viktor.parametrization import Step
+from viktor.parametrization import Text
+from viktor.parametrization import ToggleButton
 
 
 def _get_inverter_name_list(params: Munch, **kwargs):
     """Create list of options for the inverter name dependent on the type"""
+    inverter_names = list(inverter_name_dict.keys())
     if params.step_2.system_type == "California Energy Commission":
-        return [
-            "ABB: MICRO-0.3 Inverter",
-            "Outback Power Tech. Inverter",
-            "Hanwa Q-Cells Inverter",
-        ]
+        return inverter_names[3:]
     if params.step_2.system_type == "Sandia National Laboratories":
-        return [
-            "Generac Power Systems Inverter",
-            "Delta Electronics Inverter",
-            "Chint Power Systems Inverter",
-        ]
+        return inverter_names[:3]
     return []
 
 
@@ -123,7 +115,7 @@ class ConfiguratorParametrization(Parametrization):
     step_3 = Step("Step 3 Visualise your return-on-investment", views="get_plotly_view")
     step_3.text = Text(
         """## Forecast and Break-even
-        \n Here you are able to forecast the energy yield of your chosen system. Based on the **KWh price** indicated
+        \n Here you are able to forecast the energy yield of your chosen system. Based on the **kWh price** indicated
         The forecast will automatically calculate the revenue produced by your system.
         \n The break-even point is also indicated, this is the moment in time where the investment will be fully
         compensated by the revenue produced."""
@@ -139,16 +131,17 @@ class ConfiguratorParametrization(Parametrization):
         "  \n (enter only whole years)",
     )
     step_3.kwh_cost = NumberField(
-        "Enter KWh price to calculate break-even",
-        suffix="€/KWh",
-        default=0.22,
+        "Enter kWh price to calculate break-even",
+        suffix="€/kWh",
+        default=0.65,
         flex=80,
         min=0,
-        description="KWh price which is applicable to you."
+        step=0.1,
+        description="kWh price which is applicable to you."
         "  \n Prices may differ between energy providers."
         " \n"
-        "  \n Note that prices for KWh supplied **to** the grid often"
-        " differ from those of KWh's **taken from** the grid",
+        "  \n Note that prices for kWh supplied **to** the grid often"
+        " differ from those of kWh's **taken from** the grid",
     )
     step_3.text2 = Text(
         """If you are only interested in a detailed time period you could choose to not show the break-even point

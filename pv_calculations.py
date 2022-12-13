@@ -15,8 +15,10 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 SOFTWARE.
 """
 import datetime
-import pvlib
+from pathlib import Path
+
 import pandas as pd
+import pvlib
 
 
 def translate_names(entry):
@@ -32,35 +34,20 @@ def translate_names(entry):
 def calculate_energy_generation(
     latitude,
     longitude,
-    inverter_type,
     inverter_name,
     module_name,
     area=2,
-    module_type="sandiamod",
 ):
     """Calculates the yearly energy yield as a result of the coorinates"""
 
-    # get the module and inverter databases from SAM
-    url_dict = {
-        "cecmod": "https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/CEC%20Modules.csv",
-        "sandiamod": "https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/Sandia%20Modules.csv",
-        "cecinverter": "https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/CEC%20Inverters.csv",
-        "sandiainverter": "https://raw.githubusercontent.com/NREL/SAM/develop/deploy/libraries/CEC%20Inverters.csv",
-    }
     # get module and inverter information from the databases
-    modules_types = pvlib.pvsystem.retrieve_sam(None, url_dict[module_type])
-    inverters_types = pvlib.pvsystem.retrieve_sam(None, url_dict[inverter_type])
-    module = modules_types[translate_names(module_name)]
-    inverter = inverters_types[translate_names(inverter_name)]
+    modules = pvlib.pvsystem.retrieve_sam("SandiaMod")
+    inverters = pvlib.pvsystem.retrieve_sam("CECInverter")
+    module = modules[translate_names(module_name)]
+    inverter = inverters[translate_names(inverter_name)]
 
     # get module area information and calculate the amount of modules possible
-    if module_type == "cecmod":
-        surface_area = module["A_c"]
-    elif module_type == "sandiamod":
-        surface_area = module["Area"]
-    else:
-        raise ValueError("Incorrect value for module type")
-
+    surface_area = module["Area"]
     nr_modules = area // surface_area
 
     # get temperature specifications of module materials (default most used in consumer-systems)
@@ -79,8 +66,12 @@ def calculate_energy_generation(
     altitude = inputs["location"]["elevation"]  # [m]
 
     # declare system
-    system = {"module": module, "inverter": inverter, "surface_azimuth": 180}
-    system["surface_tilt"] = latitude
+    system = {
+        "module": module,
+        "inverter": inverter,
+        "surface_azimuth": 180,
+        "surface_tilt": latitude
+    }
 
     # determine solar position
     solpos = pvlib.solarposition.get_solarposition(
