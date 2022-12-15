@@ -16,21 +16,26 @@ SOFTWARE.
 """
 import datetime
 
+import numpy as np
+import pandas as pd
 from munch import Munch
-from viktor.core import ViktorController
-from viktor.views import DataGroup
-from viktor.views import DataItem
-from viktor.views import DataResult
-from viktor.views import DataView
-from viktor.views import MapPoint
-from viktor.views import MapResult
-from viktor.views import MapView
-from viktor.views import PlotlyResult
-from viktor.views import PlotlyView
-from constants import inverter_name_dict
-from constants import module_name_dict
+from viktor.core import ViktorController, progress_message
+from viktor.geometry import GeoPoint
+from viktor.views import (
+    DataGroup,
+    DataItem,
+    MapPoint,
+    MapResult,
+    MapView,
+    PlotlyAndDataResult,
+    PlotlyAndDataView,
+    PlotlyResult,
+    PlotlyView,
+)
+
+from constants import inverter_name_dict, module_name_dict
 from parametrization import ConfiguratorParametrization
-from pv_calculations import calculate_energy_generation
+from pv_calculations import calculate_energy_generation, get_location_data
 
 
 class Controller(ViktorController):
@@ -39,7 +44,7 @@ class Controller(ViktorController):
 
     label = "Configurator"
     parametrization = ConfiguratorParametrization(width=30)
-    viktor_convert_entity_field = True
+    viktor_enforce_field_constraints = True
 
     @MapView("Map", duration_guess=1)  # only visible on "Step 1"
     def get_map_view(self, params: Munch, **kwargs):
@@ -52,21 +57,136 @@ class Controller(ViktorController):
 
         return MapResult(features)
 
-    @DataView("Data", duration_guess=1)  # only visible on "Step 2"
+    @PlotlyView(
+        "Weather data",
+        duration_guess=10,
+        description="Based on location and historical weather data.",
+    )
+    def get_weather_data(self, params, **kwargs):
+        """Visualizes the solar irradiance based on historical weather data."""
+        location = params.step_1.point
+        location_data = get_location_data(location.lat, location.lon)
+        weather = location_data["weather"]
+        x_dat = weather.index.strftime("%m-%d %H:%M").sort_values().tolist()
+        temp_dat = weather["temp_air"].tolist()
+        pressure_dat = weather["pressure"].tolist()
+        wind_speed_dat = weather["wind_speed"].tolist()
+        dni = weather["dni"].tolist()
+        ghi = weather["ghi"].tolist()
+        dhi = weather["dhi"].tolist()
+
+        fig = {
+            "data": [
+                {
+                    "type": "line",
+                    "x": x_dat,
+                    "y": dni,
+                    "name": "Direct Normal Irradiance",
+                    "visible": True,
+                },
+                {
+                    "type": "line",
+                    "x": x_dat,
+                    "y": ghi,
+                    "name": "Global Horizontal Irradiance",
+                    "visible": True,
+                },
+                {
+                    "type": "line",
+                    "x": x_dat,
+                    "y": dhi,
+                    "name": "Diffuse Horizontal Irradiance",
+                    "visible": True,
+                },
+                {
+                    "type": "line",
+                    "x": x_dat,
+                    "y": temp_dat,
+                    "name": "Air temperature",
+                    "visible": False,
+                },
+                {
+                    "type": "line",
+                    "x": x_dat,
+                    "y": pressure_dat,
+                    "name": "Pressure",
+                    "visible": False,
+                },
+                {
+                    "type": "line",
+                    "x": x_dat,
+                    "y": wind_speed_dat,
+                    "name": "Wind speed",
+                    "visible": False,
+                },
+            ],
+            "layout": {
+                "title": {"text": "Weather data"},
+                "xaxis": {"title": {"text": "Simulated year"}},
+                "yaxis": {"title": {"text": ""}},
+                "updatemenus": [
+                    {
+                        "buttons": [
+                            {
+                                "label": "Solar irradiance [W/m²]",
+                                "method": "restyle",
+                                "args": [
+                                    "visible",
+                                    [True, True, True, False, False, False],
+                                ],
+                            },
+                            {
+                                "label": "Air temperature [°C]",
+                                "method": "restyle",
+                                "args": [
+                                    "visible",
+                                    [False, False, False, True, False, False],
+                                ],
+                            },
+                            {
+                                "label": "Pressure [Pa]",
+                                "method": "restyle",
+                                "args": [
+                                    "visible",
+                                    [False, False, False, False, True, False],
+                                ],
+                            },
+                            {
+                                "label": "Wind speed [m/s]",
+                                "method": "restyle",
+                                "args": [
+                                    "visible",
+                                    [False, False, False, False, False, True],
+                                ],
+                            },
+                        ]
+                    }
+                ],
+            },
+        }
+
+        return PlotlyResult(fig)
+
+    @PlotlyAndDataView("Data", duration_guess=10)  # only visible on "Step 2"
     def get_data_view(self, params: Munch, **kwargs):
         """Creates dataview for step 2 from the pv_calculation"""
 
-        energy_generation = self.get_energy_generation(params)
+        energy_yield_per_module, nr_modules, yield_df = self.get_energy_generation(
+            location=params.step_1.point,
+            inverter=params.step_2.inverter_name,
+            solar_module=params.step_2.module_name,
+            solar_surface_area=params.step_1.surface,
+        )
 
         energy_info = DataItem(
             label="Yearly energy yield per module",
-            value=energy_generation[0],
+            value=energy_yield_per_module,
             suffix="Kwh/year",
             number_of_decimals=2,
         )
         number_of_modules = DataItem(
             label="Number of modules possible on surface",
-            value=energy_generation[1],
+            value=nr_modules,
             number_of_decimals=0,
         )
         inverter_cost = DataItem(
@@ -86,8 +206,7 @@ class Controller(ViktorController):
         total_cost = DataItem(
             label="Total system cost",
             value=inverter_name_dict[params.step_2.inverter_name]["price"]
-                  + module_name_dict[params.step_2.module_name]["price"]
-                  * energy_generation[1],
+            + module_name_dict[params.step_2.module_name]["price"] * nr_modules,
             prefix="€",
             suffix=",-",
             number_of_decimals=2,
@@ -97,23 +216,44 @@ class Controller(ViktorController):
             energy_info, number_of_modules, inverter_cost, module_cost, total_cost
         )
 
-        return DataResult(data)
+        # prepare data for plotly
+        yield_df = yield_df.groupby(pd.Grouper(key="dat", freq="1D")).sum()
+        yield_df["dat"] = yield_df.index.strftime("%Y-%m-%d %H:%M")
+        x_dat = yield_df["dat"].to_list()
+        y_dat = yield_df["val"].to_list()
+
+        fig = {
+            "data": [
+                {"type": "bar", "x": x_dat, "y": y_dat, "name": "Energy yield"},
+            ],
+            "layout": {
+                "title": {"text": "Electricity production simulated."},
+                "xaxis": {"title": {"text": "Simulated year"}},
+                "yaxis": {"title": {"text": "Yield [kWh/day]"}},
+            },
+        }
+
+        return PlotlyAndDataResult(fig, data)
 
     @PlotlyView("Plot", duration_guess=10)  # only visible on "Step 3"
     def get_plotly_view(self, params: Munch, **kwargs):
         """Shows the plot of the energy yield with break-even point"""
+        progress_message("Calculate energy generation...")
+        _, nr_modules, yield_df = self.get_energy_generation(
+            location=params.step_1.point,
+            inverter=params.step_2.inverter_name,
+            solar_module=params.step_2.module_name,
+            solar_surface_area=params.step_1.surface,
+        )
 
-        energy_generation = self.get_energy_generation(params)
-
+        progress_message("Extract yield data...")
         # get yearly yield data
-        yield_df = energy_generation[2]
         yield_df["val"] *= params.step_3.kwh_cost
 
         # calculate break-even (total costs / kwh price)
         break_even = (
-                inverter_name_dict[params.step_2.inverter_name]["price"]
-                + module_name_dict[params.step_2.module_name]["price"]
-                * energy_generation[1]
+            inverter_name_dict[params.step_2.inverter_name]["price"]
+            + module_name_dict[params.step_2.module_name]["price"] * nr_modules
         )
 
         # forecast the length of the entered forecast horizon
@@ -128,28 +268,64 @@ class Controller(ViktorController):
 
         # add a cumulative column
         yield_df["cumulative_yield"] = yield_df["val"].cumsum(axis=0)
-        x_dat = yield_df["dat"].to_list()
+
+        x_dat = yield_df["dat"].tolist()
 
         # prepare data for plotly
-        y_dat = yield_df["cumulative_yield"].to_list()
-        z_dat = [break_even] * len(x_dat)
+        y_dat = np.array(yield_df["cumulative_yield"])
+        z_dat = np.full((len(x_dat)), break_even)
+
+        idxs = np.argwhere(np.diff(np.sign(y_dat - z_dat))).flatten()
+        _line = {}
+        time_period = "-"
+        if idxs:
+            break_even_date = x_dat[idxs[0]]
+            time_period = datetime.datetime.strptime(
+                break_even_date, "%Y-%m-%d %H:%M"
+            ) - datetime.datetime.strptime(x_dat[0], "%Y-%m-%d %H:%M")
+            time_period = round(time_period.days / 365, 1)
+            _line = {
+                "type": "rect",
+                "xref": "x",
+                "yref": "paper",
+                "x0": break_even_date,
+                "y0": 0,
+                "x1": break_even_date,
+                "y1": 1,
+                "fillcolor": "#FF0000",
+                "line": {
+                    "width": 1,
+                    "color": "#FF0000",
+                },
+            }
+
+        progress_message("Plot results...")
         if params.step_3.break_even_toggle:
             fig = {
                 "data": [
-                    {"type": "line", "x": x_dat, "y": y_dat, "name": "Energy yield"},
                     {
                         "type": "line",
                         "x": x_dat,
-                        "y": z_dat,
+                        "y": y_dat.tolist(),
+                        "name": "Energy yield",
+                    },
+                    {
+                        "type": "line",
+                        "x": x_dat,
+                        "y": z_dat.tolist(),
                         "name": "Break-even point",
                     },
                 ],
                 "layout": {
-                    "title": {"text": "Energy generation over time"},
+                    "title": {
+                        "text": f"Energy generation over time (break-even = {time_period} years)"
+                    },
                     "xaxis": {"title": {"text": "Forecast horizon"}},
                     "yaxis": {"title": {"text": "Revenue produced by system [€]"}},
                 },
             }
+            if _line:
+                fig["layout"]["shapes"] = [_line]
         else:
             fig = {
                 "data": [
@@ -165,14 +341,16 @@ class Controller(ViktorController):
         return PlotlyResult(fig)
 
     @staticmethod
-    def get_energy_generation(params: Munch):
+    def get_energy_generation(
+        location: GeoPoint, inverter: str, solar_module: str, solar_surface_area: float
+    ):
         """Generate energy yield data"""
         return calculate_energy_generation(
-            latitude=params.step_1.point.lat,
-            longitude=params.step_1.point.lon,
-            inverter_name=inverter_name_dict[params.step_2.inverter_name]["name"],
-            module_name=module_name_dict[params.step_2.module_name]["name"],
-            area=params.step_1.surface,
+            latitude=location.lat,
+            longitude=location.lon,
+            inverter_name=inverter_name_dict[inverter]["name"],
+            module_name=module_name_dict[solar_module]["name"],
+            area=solar_surface_area,
         )
 
     @staticmethod

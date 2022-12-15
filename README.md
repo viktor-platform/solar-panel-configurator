@@ -1,4 +1,4 @@
-![](https://img.shields.io/badge/SDK-v12.10.0-blue) <Please check version is the same as specified in requirements.txt>
+![](https://img.shields.io/badge/SDK-v13.7.0-blue) <Please check version is the same as specified in requirements.txt>
 
 # Solar panel configurator
 
@@ -8,20 +8,19 @@ The goal of this sample app is to show how a super easy to use app looks like.
 Concepts like Steps, descriptions and markdown text is present to guide a user.
 This app also interacts with external databases for component information and weather data.
 
+A published version of this app is available on [demo.viktor.ai](https://demo.viktor.ai/workspaces/10/app/)
+
 **Step 1: Define home location**
 
-![](manifest/Step_1.png)
+![](resources/Step_1.png)
 
 **Step 2: Choose system configuration**
 
-![](manifest/Step_2.png)
+![](resources/Step_2.png)
 
 **Step 3: Visualise ROI**
 
-![](manifest/Step_3.png)
+![](resources/Step_3.png)
 
 ## App structure 
-
-```
-Solar panel          
-```
+This is an editor-only app type.

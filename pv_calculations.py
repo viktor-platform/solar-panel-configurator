@@ -31,6 +31,26 @@ def translate_names(entry):
     return translated_entry
 
 
+def get_location_data(latitude, longitude):
+    """Retrieves the weather data based on the location."""
+    weather, _, inputs, _ = pvlib.iotools.get_pvgis_tmy(
+        latitude, longitude, map_variables=True
+    )
+    weather.index.name = "utc_time"
+    altitude = inputs["location"]["elevation"]
+
+    # determine solar position
+    solpos = pvlib.solarposition.get_solarposition(
+        time=weather.index,
+        latitude=latitude,
+        longitude=longitude,
+        altitude=altitude,
+        temperature=weather["temp_air"],
+        pressure=weather["pressure"],
+    )
+    return {"weather": weather, "altitude": altitude, "solar_position": solpos}
+
+
 def calculate_energy_generation(
     latitude,
     longitude,
@@ -56,32 +76,20 @@ def calculate_energy_generation(
     ]["open_rack_glass_glass"]
 
     # retreive weather data and elevation (altitude)
-    weather, _, inputs, _ = pvlib.iotools.get_pvgis_tmy(
-        latitude, longitude, map_variables=True
-    )
-    weather.index.name = "utc_time"
+    location_data = get_location_data(latitude, longitude)
+    weather = location_data["weather"]
     temp_air = weather["temp_air"]  # [degrees_C]
     wind_speed = weather["wind_speed"]  # [m/s]
     pressure = weather["pressure"]  # [Pa]
-    altitude = inputs["location"]["elevation"]  # [m]
+    solpos = location_data["solar_position"]
 
     # declare system
     system = {
         "module": module,
         "inverter": inverter,
         "surface_azimuth": 180,
-        "surface_tilt": latitude
+        "surface_tilt": latitude,
     }
-
-    # determine solar position
-    solpos = pvlib.solarposition.get_solarposition(
-        time=weather.index,
-        latitude=latitude,
-        longitude=longitude,
-        altitude=altitude,
-        temperature=temp_air,
-        pressure=pressure,
-    )
 
     # calculate energy produced based on entered data
     dni_extra = pvlib.irradiance.get_extra_radiation(weather.index)
@@ -138,10 +146,7 @@ def calculate_energy_generation(
     acdf.val *= 0.001
     acdf.fillna(0, inplace=True)
 
-    # possible plot
-    acdf.plot(x="dat", y="val")
     annual_energy = yield_per_module["val"].sum()
-    # plt.show()
 
     # final result in KWh*hrs
     energy_yield_per_module = int(annual_energy)
