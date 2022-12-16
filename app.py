@@ -366,6 +366,6 @@ class Controller(ViktorController):
     def final_step(self, params, **kwargs):
         """Initiates the process of rendering the last step."""
         html_path = Path(__file__).parent / "final_step.html"
-        with html_path.open() as f:
-            html_string = f.read()
+        with html_path.open('utm-8') as _file:
+            html_string = _file.read()
         return WebResult(html=html_string)
