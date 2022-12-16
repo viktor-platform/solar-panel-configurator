@@ -15,7 +15,6 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 SOFTWARE.
 """
 import datetime
-from pathlib import Path
 
 import pandas as pd
 import pvlib
@@ -29,6 +28,24 @@ def translate_names(entry):
     translated_entry = entry.translate(trans_dict)
 
     return translated_entry
+
+
+def get_location_data(latitude, longitude):
+    """Retrieves the weather data based on the location."""
+    weather, _, inputs, _ = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)
+    weather.index.name = "utc_time"
+    altitude = inputs["location"]["elevation"]
+
+    # determine solar position
+    solpos = pvlib.solarposition.get_solarposition(
+        time=weather.index,
+        latitude=latitude,
+        longitude=longitude,
+        altitude=altitude,
+        temperature=weather["temp_air"],
+        pressure=weather["pressure"],
+    )
+    return {"weather": weather, "altitude": altitude, "solar_position": solpos}
 
 
 def calculate_energy_generation(
@@ -51,37 +68,23 @@ def calculate_energy_generation(
     nr_modules = area // surface_area
 
     # get temperature specifications of module materials (default most used in consumer-systems)
-    temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS[
-        "sapm"
-    ]["open_rack_glass_glass"]
+    temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS["sapm"]["open_rack_glass_glass"]
 
     # retreive weather data and elevation (altitude)
-    weather, _, inputs, _ = pvlib.iotools.get_pvgis_tmy(
-        latitude, longitude, map_variables=True
-    )
-    weather.index.name = "utc_time"
+    location_data = get_location_data(latitude, longitude)
+    weather = location_data["weather"]
     temp_air = weather["temp_air"]  # [degrees_C]
     wind_speed = weather["wind_speed"]  # [m/s]
     pressure = weather["pressure"]  # [Pa]
-    altitude = inputs["location"]["elevation"]  # [m]
+    solpos = location_data["solar_position"]
 
     # declare system
     system = {
         "module": module,
         "inverter": inverter,
         "surface_azimuth": 180,
-        "surface_tilt": latitude
+        "surface_tilt": latitude,
     }
-
-    # determine solar position
-    solpos = pvlib.solarposition.get_solarposition(
-        time=weather.index,
-        latitude=latitude,
-        longitude=longitude,
-        altitude=altitude,
-        temperature=temp_air,
-        pressure=pressure,
-    )
 
     # calculate energy produced based on entered data
     dni_extra = pvlib.irradiance.get_extra_radiation(weather.index)
@@ -113,12 +116,8 @@ def calculate_energy_generation(
         total_irrad["poa_direct"], total_irrad["poa_diffuse"], am_abs, aoi, module
     )
     dc_yield = pvlib.pvsystem.sapm(effective_irradiance, tcell, module)
-    ac_yield = pvlib.inverter.sandia(
-        dc_yield["v_mp"] * nr_modules, dc_yield["p_mp"] * nr_modules, inverter
-    )
-    ac_yield_per_module = pvlib.inverter.sandia(
-        dc_yield["v_mp"], dc_yield["p_mp"], inverter
-    )
+    ac_yield = pvlib.inverter.sandia(dc_yield["v_mp"] * nr_modules, dc_yield["p_mp"] * nr_modules, inverter)
+    ac_yield_per_module = pvlib.inverter.sandia(dc_yield["v_mp"], dc_yield["p_mp"], inverter)
 
     # output for the energy per module
     yield_per_module = ac_yield_per_module.to_frame()
@@ -129,19 +128,14 @@ def calculate_energy_generation(
     # prepare data for presentation and visualisation
     acdf = ac_yield.to_frame()
     acdf["utc_time"] = pd.to_datetime(acdf.index)
-    acdf["utc_time"] = acdf["utc_time"].apply(
-        lambda dt: dt.replace(year=datetime.date.today().year)
-    )
+    acdf["utc_time"] = acdf["utc_time"].apply(lambda dt: dt.replace(year=datetime.date.today().year))
 
     acdf.columns = ["val", "dat"]
 
     acdf.val *= 0.001
     acdf.fillna(0, inplace=True)
 
-    # possible plot
-    acdf.plot(x="dat", y="val")
     annual_energy = yield_per_module["val"].sum()
-    # plt.show()
 
     # final result in KWh*hrs
     energy_yield_per_module = int(annual_energy)
