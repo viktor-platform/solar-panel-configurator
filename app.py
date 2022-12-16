@@ -329,7 +329,7 @@ class Controller(ViktorController):
         else:
             fig = {
                 "data": [
-                    {"type": "bar", "x": x_dat, "y": y_dat, "name": "Energy yield"}
+                    {"type": "bar", "x": x_dat, "y": y_dat.tolist(), "name": "Energy yield"}
                 ],
                 "layout": {
                     "title": {"text": "Energy generation over time"},
