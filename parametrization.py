@@ -17,6 +17,7 @@ SOFTWARE.
 """
 from munch import Munch
 from viktor.errors import UserError
+from viktor.geometry import GeoPoint
 from viktor.parametrization import (
     GeoPointField,
     NumberField,
@@ -28,6 +29,8 @@ from viktor.parametrization import (
 )
 
 from constants import inverter_name_dict
+
+DEFAULT_LOCATION = GeoPoint(37.443889, -6.259444)
 
 
 def validate_step_1(params, **kwargs):
@@ -58,7 +61,7 @@ class ConfiguratorParametrization(Parametrization):
     )
 
     step_1.text = Text(
-        """# Welcome to the Solar configurator app
+        """# Welcome to the Solar configurator app!
 This app allows one to design and calculate the return-on-investment for a PV system in a simplified manner.
 
 ## Location definition
@@ -78,6 +81,7 @@ system.
     step_1.point = GeoPointField(
         "enter a point",
         description="Click a location on the map to select it for calculation",
+        default=DEFAULT_LOCATION,
     )
     step_1.text3 = Text("""Define the surface area available on the roof:""")
     step_1.surface = NumberField(
@@ -164,9 +168,7 @@ compensated by the revenue produced.
         default=5,
         flex=80,
         min=1,
-        description="Amount of years starting at"
-        "  \n the beginning of this year"
-        "  \n (enter only whole years)",
+        description="Amount of years starting at" "  \n the beginning of this year" "  \n (enter only whole years)",
     )
     step_3.kwh_cost = NumberField(
         "Enter kWh price to calculate break-even",
@@ -190,8 +192,5 @@ point.
 """
     )
     step_3.break_even_toggle = ToggleButton("Show break-even point", default=True)
-    step_3.text3 = Text(
-        """### Curious how this app was made?
-For more information, check out the [repository on Github](https://github.com/viktor-platform/sample-solar-panel-configurator)
-"""
-    )
+
+    final_step = Step("What's next?", views="final_step")

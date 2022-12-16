@@ -15,6 +15,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 SOFTWARE.
 """
 import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -31,6 +32,8 @@ from viktor.views import (
     PlotlyAndDataView,
     PlotlyResult,
     PlotlyView,
+    WebResult,
+    WebView,
 )
 
 from constants import inverter_name_dict, module_name_dict
@@ -212,9 +215,7 @@ class Controller(ViktorController):
             number_of_decimals=2,
         )
 
-        data = DataGroup(
-            energy_info, number_of_modules, inverter_cost, module_cost, total_cost
-        )
+        data = DataGroup(energy_info, number_of_modules, inverter_cost, module_cost, total_cost)
 
         # prepare data for plotly
         yield_df = yield_df.groupby(pd.Grouper(key="dat", freq="1D")).sum()
@@ -280,9 +281,9 @@ class Controller(ViktorController):
         time_period = "-"
         if idxs:
             break_even_date = x_dat[idxs[0]]
-            time_period = datetime.datetime.strptime(
-                break_even_date, "%Y-%m-%d %H:%M"
-            ) - datetime.datetime.strptime(x_dat[0], "%Y-%m-%d %H:%M")
+            time_period = datetime.datetime.strptime(break_even_date, "%Y-%m-%d %H:%M") - datetime.datetime.strptime(
+                x_dat[0], "%Y-%m-%d %H:%M"
+            )
             time_period = round(time_period.days / 365, 1)
             _line = {
                 "type": "rect",
@@ -305,21 +306,19 @@ class Controller(ViktorController):
                 "data": [
                     {
                         "type": "line",
-                        "x": x_dat,
-                        "y": y_dat.tolist(),
+                        "x": x_dat[::50],
+                        "y": y_dat.tolist()[::50],
                         "name": "Energy yield",
                     },
                     {
                         "type": "line",
-                        "x": x_dat,
-                        "y": z_dat.tolist(),
+                        "x": x_dat[::50],
+                        "y": z_dat.tolist()[::50],
                         "name": "Break-even point",
                     },
                 ],
                 "layout": {
-                    "title": {
-                        "text": f"Energy generation over time (break-even = {time_period} years)"
-                    },
+                    "title": {"text": f"Energy generation over time (break-even = {time_period} years)"},
                     "xaxis": {"title": {"text": "Forecast horizon"}},
                     "yaxis": {"title": {"text": "Revenue produced by system [€]"}},
                 },
@@ -329,7 +328,12 @@ class Controller(ViktorController):
         else:
             fig = {
                 "data": [
-                    {"type": "bar", "x": x_dat, "y": y_dat.tolist(), "name": "Energy yield"}
+                    {
+                        "type": "bar",
+                        "x": x_dat[::50],
+                        "y": y_dat.tolist()[::50],
+                        "name": "Energy yield",
+                    }
                 ],
                 "layout": {
                     "title": {"text": "Energy generation over time"},
@@ -341,9 +345,7 @@ class Controller(ViktorController):
         return PlotlyResult(fig)
 
     @staticmethod
-    def get_energy_generation(
-        location: GeoPoint, inverter: str, solar_module: str, solar_surface_area: float
-    ):
+    def get_energy_generation(location: GeoPoint, inverter: str, solar_module: str, solar_surface_area: float):
         """Generate energy yield data"""
         return calculate_energy_generation(
             latitude=location.lat,
@@ -359,3 +361,11 @@ class Controller(ViktorController):
         current_year = datetime.date.today().year
         frame = frame.apply(lambda dt: dt.replace(year=current_year + increment))
         return frame
+
+    @WebView(" ", duration_guess=1)
+    def final_step(self, params, **kwargs):
+        """Initiates the process of rendering the last step."""
+        html_path = Path(__file__).parent / "final_step.html"
+        with html_path.open() as f:
+            html_string = f.read()
+        return WebResult(html=html_string)
