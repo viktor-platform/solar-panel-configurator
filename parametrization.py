@@ -30,7 +30,7 @@ from viktor.parametrization import (
 
 from constants import inverter_name_dict
 
-DEFAULT_LOCATION = GeoPoint(37.443889, -6.259444)
+DEFAULT_LOCATION = GeoPoint(51.92230888213379, 4.469658812222693)
 
 
 def validate_step_1(params, **kwargs):
